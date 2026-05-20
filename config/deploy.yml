@@ -40,9 +40,9 @@ env:
     MAIL_HOST: smtp.forpsi.com
     MAIL_PORT: "587"
     MAIL_ENCRYPTION: tls
-    MAIL_FROM_ADDRESS: noreply@petr-radous.cz
-    MAIL_FROM_NAME: Todo
-    MAIL_USERNAME: noreply@petr-radous.cz
+    MAIL_FROM_ADDRESS: info@petr-radous.cz
+    MAIL_FROM_NAME: Todo App
+    MAIL_USERNAME: info@petr-radous.cz
   secret:
     - APP_KEY
     - DB_PASSWORD
