@@ -11,17 +11,16 @@ type Props = {
     title?: string;
 };
 
-const props = withDefaults(defineProps<Props>(), {
-    title: () => t('errors.something_went_wrong'),
-});
+const props = defineProps<Props>();
 
+const displayTitle = computed(() => props.title ?? t('errors.something_went_wrong'));
 const uniqueErrors = computed(() => Array.from(new Set(props.errors)));
 </script>
 
 <template>
     <Alert variant="destructive">
         <AlertCircle class="size-4" />
-        <AlertTitle>{{ title }}</AlertTitle>
+        <AlertTitle>{{ displayTitle }}</AlertTitle>
         <AlertDescription>
             <ul class="list-inside list-disc text-sm">
                 <li v-for="(error, index) in uniqueErrors" :key="index">

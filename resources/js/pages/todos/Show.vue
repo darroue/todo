@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Form, Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
+import { Form, Head, Link, router, setLayoutProps, useForm, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import { ArrowLeft, Check, GripVertical, Paperclip, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, nextTick, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { VueDraggable as VueDraggablePlus } from 'vue-draggable-plus';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
@@ -29,24 +30,25 @@ type Props = {
 
 const props = defineProps<Props>();
 
-defineOptions({
-    layout: (props: { currentTeam?: Team | null; todo: TodoDetail }) => ({
-        breadcrumbs: [
-            {
-                title: 'Todos',
-                href: props.currentTeam ? index(props.currentTeam.slug).url : '/',
-            },
-            {
-                title: props.todo.title,
-                href: props.currentTeam
-                    ? show({ current_team: props.currentTeam.slug, todo: props.todo.id }).url
-                    : '/',
-            },
-        ],
-    }),
+const { t } = useI18n();
+const page = usePage();
+const currentTeam = page.props.currentTeam as Team | null;
+
+setLayoutProps({
+    breadcrumbs: [
+        {
+            title: t('todos.title'),
+            href: currentTeam ? index(currentTeam.slug).url : '/',
+        },
+        {
+            title: props.todo.title,
+            href: currentTeam
+                ? show({ current_team: currentTeam.slug, todo: props.todo.id }).url
+                : '/',
+        },
+    ],
 });
 
-const page = usePage();
 const currentTeamSlug = () => page.props.currentTeam!.slug;
 const taskArgs = () => ({ current_team: currentTeamSlug(), todo: props.todo.id });
 
@@ -209,7 +211,7 @@ useEcho<{ todoId: number }>(
                     <ArrowLeft class="h-4 w-4" />
                 </Link>
             </Button>
-            <Heading variant="small" :title="todo.title" description="Manage tasks for this todo" />
+            <Heading variant="small" :title="todo.title" :description="t('todos.show.description')" />
         </div>
 
         <!-- Add task form -->
@@ -220,24 +222,24 @@ useEcho<{ todoId: number }>(
             v-slot="{ errors, processing }"
             @success="newTaskKey++"
         >
-            <p class="text-sm font-medium">Add a new task</p>
+            <p class="text-sm font-medium">{{ t('todos.show.add_heading') }}</p>
             <div class="flex flex-col gap-1">
-                <Label for="task-title">Title</Label>
+                <Label for="task-title">{{ t('todos.show.task_title') }}</Label>
                 <Input
                     id="task-title"
                     name="title"
-                    placeholder="Task title…"
+                    :placeholder="t('todos.show.task_title_placeholder')"
                     required
                     data-test="task-title-input"
                 />
                 <InputError :message="errors.title" />
             </div>
             <div class="flex flex-col gap-1">
-                <Label for="task-description">Description</Label>
+                <Label for="task-description">{{ t('todos.show.task_description') }}</Label>
                 <textarea
                     id="task-description"
                     name="description"
-                    placeholder="Optional description…"
+                    :placeholder="t('todos.show.task_description_placeholder')"
                     rows="2"
                     class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     data-test="task-description-input"
@@ -246,7 +248,7 @@ useEcho<{ todoId: number }>(
             </div>
             <div>
                 <Button type="submit" :disabled="processing" data-test="task-create-button">
-                    <Plus /> Add task
+                    <Plus /> {{ t('todos.show.add_task') }}
                 </Button>
             </div>
         </Form>
@@ -327,7 +329,7 @@ useEcho<{ todoId: number }>(
                                 class="mt-1 cursor-text text-sm text-muted-foreground/40 italic"
                                 @dblclick="startEdit(task)"
                             >
-                                Add description…
+                                {{ t('todos.show.add_description_hint') }}
                             </p>
                         </template>
                     </div>
@@ -337,7 +339,7 @@ useEcho<{ todoId: number }>(
                     <label
                         :for="`attachment-${task.id}`"
                         class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                        title="Upload attachment"
+                        :title="t('todos.show.upload')"
                     >
                         <Paperclip class="h-4 w-4" />
                         <input
@@ -419,7 +421,7 @@ useEcho<{ todoId: number }>(
                         class="rounded px-1 py-0.5 text-[9px] font-medium"
                         :class="item.status === 'uploading' ? 'bg-blue-100 text-blue-700' : 'bg-muted-foreground/20 text-muted-foreground'"
                     >
-                        {{ item.status === 'uploading' ? 'Nahrávání…' : 'Ve frontě' }}
+                        {{ item.status === 'uploading' ? t('todos.show.uploading') : t('todos.show.queued') }}
                     </span>
                     <button
                         type="button"
@@ -437,7 +439,7 @@ useEcho<{ todoId: number }>(
             v-if="tasks.length === 0"
             class="py-8 text-center text-muted-foreground"
         >
-            No tasks yet. Add one above.
+            {{ t('todos.show.empty') }}
         </p>
     </div>
 </template>

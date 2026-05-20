@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, setLayoutProps } from '@inertiajs/vue3';
 import { Eye, Pencil, Plus } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
 import CreateTeamModal from '@/components/CreateTeamModal.vue';
 import Heading from '@/components/Heading.vue';
 import { Badge } from '@/components/ui/badge';
@@ -20,34 +21,34 @@ type Props = {
 
 defineProps<Props>();
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Teams',
-                href: index(),
-            },
-        ],
-    },
+const { t } = useI18n();
+
+setLayoutProps({
+    breadcrumbs: [
+        {
+            title: t('teams.title'),
+            href: index(),
+        },
+    ],
 });
 </script>
 
 <template>
-    <Head title="Teams" />
+    <Head :title="t('teams.title')" />
 
-    <h1 class="sr-only">Teams</h1>
+    <h1 class="sr-only">{{ t('teams.title') }}</h1>
 
     <div class="flex flex-col space-y-6">
         <div class="flex items-center justify-between">
             <Heading
                 variant="small"
-                title="Teams"
-                description="Manage your teams and team memberships"
+                :title="t('teams.title')"
+                :description="t('teams.description')"
             />
 
             <CreateTeamModal>
                 <Button data-test="teams-new-team-button">
-                    <Plus /> New team
+                    <Plus /> {{ t('teams.new_team') }}
                 </Button>
             </CreateTeamModal>
         </div>
@@ -64,7 +65,7 @@ defineOptions({
                         <div class="flex items-center gap-2">
                             <span class="font-medium">{{ team.name }}</span>
                             <Badge v-if="team.isPersonal" variant="secondary">
-                                Personal
+                                {{ t('teams.personal') }}
                             </Badge>
                         </div>
                         <span class="text-sm text-muted-foreground">
@@ -89,7 +90,7 @@ defineOptions({
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>View team</p>
+                                <p>{{ t('teams.view') }}</p>
                             </TooltipContent>
                         </Tooltip>
 
@@ -107,7 +108,7 @@ defineOptions({
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Edit team</p>
+                                <p>{{ t('teams.edit') }}</p>
                             </TooltipContent>
                         </Tooltip>
                     </div>
@@ -118,7 +119,7 @@ defineOptions({
                 v-if="teams.length === 0"
                 class="py-8 text-center text-muted-foreground"
             >
-                You don't belong to any teams yet.
+                {{ t('teams.empty') }}
             </p>
         </div>
     </div>
