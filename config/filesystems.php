@@ -52,6 +52,7 @@ return [
             'credentials' => env('GCS_CREDENTIALS'),
             'project_id' => env('GCS_PROJECT_ID', 'petr-radous'),
             'bucket' => env('GCS_BUCKET'),
+            'url' => 'https://storage.googleapis.com/'.env('GCS_BUCKET'),
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
