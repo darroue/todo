@@ -25,7 +25,7 @@ class TaskAttachmentController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store("attachments/tasks/{$task->id}", 'public');
+        $path = $file->store("attachments/tasks/{$task->id}");
 
         $task->attachments()->create([
             'path' => $path,
@@ -45,7 +45,7 @@ class TaskAttachmentController extends Controller
         abort_unless($task->todo_id === $todo->id, 404);
         abort_unless($attachment->task_id === $task->id, 404);
 
-        Storage::disk('public')->delete($attachment->path);
+        Storage::delete($attachment->path);
         $attachment->delete();
 
         broadcast(new TaskChanged($currentTeam, $todo, $task, 'attachment_deleted'))->toOthers();

@@ -30,7 +30,7 @@ class TaskAttachment extends Model
 
     public function url(): string
     {
-        return Storage::disk('public')->url($this->path);
+        return Storage::url($this->path);
     }
 
     public function extension(): string

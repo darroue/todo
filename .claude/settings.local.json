@@ -8,7 +8,8 @@
       "Bash(npm run *)",
       "Bash(npx vue-tsc *)",
       "Bash(docker buildx *)",
-      "Bash(composer require *)"
+      "Bash(composer require *)",
+      "mcp__laravel-boost__last-error"
     ]
   },
   "enabledMcpjsonServers": [
