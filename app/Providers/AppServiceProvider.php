@@ -39,8 +39,11 @@ class AppServiceProvider extends ServiceProvider
     protected function configureGcs(): void
     {
         Storage::extend('gcs', function (Application $app, array $config) {
+            $keyFile = json_decode($config['credentials'], true);
+            $keyFile['private_key'] = str_replace('\n', "\n", $keyFile['private_key']);
+
             $storageClient = new StorageClient([
-                'keyFile' => json_decode($config['credentials'], true),
+                'keyFile' => $keyFile,
                 'projectId' => $config['project_id'],
             ]);
 
