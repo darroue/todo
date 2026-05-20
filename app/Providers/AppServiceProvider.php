@@ -55,11 +55,13 @@ class AppServiceProvider extends ServiceProvider
                 PortableVisibilityHandler::NO_PREDEFINED_VISIBILITY,
             );
 
-            return new FilesystemAdapter(
-                new Filesystem($adapter, $config),
-                $adapter,
-                $config,
-            );
+            return new class(new Filesystem($adapter, $config), $adapter, $config) extends FilesystemAdapter
+            {
+                public function url($path): string
+                {
+                    return rtrim($this->config['url'], '/').'/'.ltrim($path, '/');
+                }
+            };
         });
     }
 
