@@ -13,6 +13,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use League\Flysystem\Filesystem;
 use League\Flysystem\GoogleCloudStorage\GoogleCloudStorageAdapter;
+use League\Flysystem\GoogleCloudStorage\PortableVisibilityHandler;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -49,6 +50,9 @@ class AppServiceProvider extends ServiceProvider
 
             $adapter = new GoogleCloudStorageAdapter(
                 $storageClient->bucket($config['bucket']),
+                '',
+                null,
+                PortableVisibilityHandler::NO_PREDEFINED_VISIBILITY,
             );
 
             return new FilesystemAdapter(
