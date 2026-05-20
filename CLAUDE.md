@@ -208,3 +208,8 @@ Vue components must have a single root element.
 - IMPORTANT: Activate `inertia-vue-development` when working with Inertia Vue client-side patterns.
 
 </laravel-boost-guidelines>
+
+## Vue i18n
+
+- Never hardcode translation strings in Vue templates or JS/TS. Always use `$t('key')` in templates or `const { t } = useI18n()` in `<script setup>`.
+- If a key doesn't exist yet, add it to the appropriate locale file.
