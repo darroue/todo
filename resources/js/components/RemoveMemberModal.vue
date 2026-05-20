@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -13,6 +14,8 @@ import {
 } from '@/components/ui/dialog';
 import { destroy as destroyMember } from '@/routes/teams/members';
 import type { Team, TeamMember } from '@/types';
+
+const { t } = useI18n();
 
 type Props = {
     team: Team;
@@ -44,16 +47,15 @@ const removeMember = () => {
     <Dialog :open="props.open" @update:open="emit('update:open', $event)">
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Remove team member</DialogTitle>
+                <DialogTitle>{{ t('teams.remove_member_modal.title') }}</DialogTitle>
                 <DialogDescription>
-                    Are you sure you want to remove
-                    <strong>{{ props.member?.name }}</strong> from this team?
+                    {{ t('teams.remove_member_modal.description', { name: props.member?.name }) }}
                 </DialogDescription>
             </DialogHeader>
 
             <DialogFooter class="gap-2">
                 <DialogClose as-child>
-                    <Button variant="secondary"> Cancel </Button>
+                    <Button variant="secondary">{{ t('common.cancel') }}</Button>
                 </DialogClose>
 
                 <Button
@@ -62,7 +64,7 @@ const removeMember = () => {
                     :disabled="processing"
                     @click="removeMember"
                 >
-                    Remove member
+                    {{ t('teams.remove_member_modal.submit') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

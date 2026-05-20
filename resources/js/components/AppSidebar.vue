@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, CheckSquare, FolderGit2, LayoutGrid } from 'lucide-vue-next';
+import { CheckSquare, LayoutGrid } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -20,6 +21,7 @@ import { dashboard } from '@/routes';
 import { index as todosIndex } from '@/routes/todos';
 import type { NavItem } from '@/types';
 
+const { t } = useI18n();
 const page = usePage();
 
 const dashboardUrl = computed(() =>
@@ -32,12 +34,12 @@ const todosUrl = computed(() =>
 
 const mainNavItems = computed<NavItem[]>(() => [
     {
-        title: 'Dashboard',
+        title: t('nav.dashboard'),
         href: dashboardUrl.value,
         icon: LayoutGrid,
     },
     {
-        title: 'Todos',
+        title: t('nav.todos'),
         href: todosUrl.value,
         icon: CheckSquare,
     },

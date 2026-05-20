@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Form, Head, router } from '@inertiajs/vue3';
+import { Form, Head, router, setLayoutProps } from '@inertiajs/vue3';
 import { ChevronDown, Mail, UserPlus, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CancelInvitationModal from '@/components/CancelInvitationModal.vue';
 import DeleteTeamModal from '@/components/DeleteTeamModal.vue';
 import Heading from '@/components/Heading.vue';
@@ -46,19 +47,13 @@ type Props = {
 
 const props = defineProps<Props>();
 
-defineOptions({
-    layout: (props: { team: Team }) => ({
-        breadcrumbs: [
-            {
-                title: 'Teams',
-                href: index(),
-            },
-            {
-                title: props.team.name,
-                href: edit(props.team.slug),
-            },
-        ],
-    }),
+const { t } = useI18n();
+
+setLayoutProps({
+    breadcrumbs: [
+        { title: t('teams.title'), href: index() },
+        { title: props.team.name, href: edit(props.team.slug) },
+    ],
 });
 
 const { getInitials } = useInitials();
@@ -72,8 +67,8 @@ const invitationToCancel = ref<TeamInvitation | null>(null);
 
 const pageTitle = computed(() =>
     props.permissions.canUpdateTeam
-        ? `Edit ${props.team.name}`
-        : `View ${props.team.name}`,
+        ? t('teams.edit_title', { name: props.team.name })
+        : t('teams.view_title', { name: props.team.name }),
 );
 
 const updateMemberRole = (member: TeamMember, newRole: string) => {
@@ -104,8 +99,8 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
         <div v-if="permissions.canUpdateTeam" class="space-y-6">
             <Heading
                 variant="small"
-                title="Team settings"
-                description="Update your team name and settings"
+                :title="t('teams.settings.title')"
+                :description="t('teams.settings.description')"
             />
 
             <Form
@@ -114,7 +109,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                 v-slot="{ errors, processing }"
             >
                 <div class="grid gap-2">
-                    <Label for="name">Team name</Label>
+                    <Label for="name">{{ t('teams.name_field') }}</Label>
                     <Input
                         id="name"
                         name="name"
@@ -131,7 +126,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                         data-test="team-save-button"
                         :disabled="processing"
                     >
-                        Save
+                        {{ t('teams.settings.save') }}
                     </Button>
                 </div>
             </Form>
@@ -146,10 +141,10 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
             <div class="flex items-center justify-between">
                 <Heading
                     variant="small"
-                    title="Team members"
+                    :title="t('teams.members.title')"
                     :description="
                         permissions.canCreateInvitation
-                            ? 'Manage who belongs to this team'
+                            ? t('teams.members.description')
                             : ''
                     "
                 />
@@ -159,7 +154,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                     data-test="invite-member-button"
                     @click="inviteDialogOpen = true"
                 >
-                    <UserPlus /> Invite member
+                    <UserPlus /> {{ t('teams.members.invite') }}
                 </Button>
             </div>
 
@@ -245,7 +240,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                    <p>Remove member</p>
+                                    <p>{{ t('teams.members.remove') }}</p>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
@@ -258,8 +253,8 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
         <div v-if="invitations.length > 0" class="space-y-6">
             <Heading
                 variant="small"
-                title="Pending invitations"
-                description="Invitations that haven't been accepted yet"
+                :title="t('teams.invitations.title')"
+                :description="t('teams.invitations.description')"
             />
 
             <div class="space-y-3">
@@ -298,7 +293,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p>Cancel invitation</p>
+                                <p>{{ t('teams.invitations.cancel') }}</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
@@ -313,8 +308,8 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
         >
             <Heading
                 variant="small"
-                title="Delete team"
-                description="Permanently delete your team"
+                :title="t('teams.danger.title')"
+                :description="t('teams.danger.description')"
             />
             <div
                 class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10"
@@ -322,16 +317,14 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                 <div
                     class="relative space-y-0.5 text-red-600 dark:text-red-100"
                 >
-                    <p class="font-medium">Warning</p>
-                    <p class="text-sm">
-                        Please proceed with caution, this cannot be undone.
-                    </p>
+                    <p class="font-medium">{{ t('common.warning') }}</p>
+                    <p class="text-sm">{{ t('common.caution') }}</p>
                 </div>
                 <Button
                     data-test="delete-team-button"
                     variant="destructive"
                     @click="deleteDialogOpen = true"
-                    >Delete team</Button
+                    >{{ t('teams.danger.button') }}</Button
                 >
             </div>
         </div>

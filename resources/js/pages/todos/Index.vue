@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Form, Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Form, Head, Link, router, setLayoutProps, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
 import { CheckSquare, Plus, Trash2 } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -17,18 +18,18 @@ type Props = {
 
 defineProps<Props>();
 
-defineOptions({
-    layout: (props: { currentTeam?: Team | null }) => ({
-        breadcrumbs: [
-            {
-                title: 'Todos',
-                href: props.currentTeam ? index(props.currentTeam.slug).url : '/',
-            },
-        ],
-    }),
+const { t } = useI18n();
+const page = usePage();
+
+setLayoutProps({
+    breadcrumbs: [
+        {
+            title: t('todos.title'),
+            href: page.props.currentTeam ? index((page.props.currentTeam as Team).slug).url : '/',
+        },
+    ],
 });
 
-const page = usePage();
 const currentTeamSlug = () => page.props.currentTeam!.slug;
 const teamId = computed(() => page.props.currentTeam?.id);
 
@@ -41,13 +42,13 @@ useEcho<{ action: string }>(
 </script>
 
 <template>
-    <Head title="Todos" />
+    <Head :title="t('todos.title')" />
 
     <div class="flex flex-col space-y-6 px-4 py-6">
         <Heading
             variant="small"
-            title="Todos"
-            description="Manage todos for your team"
+            :title="t('todos.title')"
+            :description="t('todos.description')"
         />
 
         <Form
@@ -56,11 +57,11 @@ useEcho<{ action: string }>(
             v-slot="{ errors, processing }"
         >
             <div class="flex flex-col gap-1">
-                <Label for="todo-title" class="sr-only">Title</Label>
+                <Label for="todo-title" class="sr-only">{{ t('todos.show.task_title') }}</Label>
                 <Input
                     id="todo-title"
                     name="title"
-                    placeholder="New todo title…"
+                    :placeholder="t('todos.title_placeholder')"
                     required
                     class="w-72"
                     data-test="todo-title-input"
@@ -68,7 +69,7 @@ useEcho<{ action: string }>(
                 <InputError :message="errors.title" />
             </div>
             <Button type="submit" :disabled="processing" data-test="todo-create-button">
-                <Plus /> Add todo
+                <Plus /> {{ t('todos.add') }}
             </Button>
         </Form>
 
@@ -87,7 +88,7 @@ useEcho<{ action: string }>(
                     <div>
                         <p class="font-medium">{{ todo.title }}</p>
                         <p class="text-sm text-muted-foreground">
-                            {{ todo.completedTasksCount }}/{{ todo.tasksCount }} tasks completed
+                            {{ t('todos.progress', { completed: todo.completedTasksCount, total: todo.tasksCount }) }}
                         </p>
                     </div>
                 </Link>
@@ -109,7 +110,7 @@ useEcho<{ action: string }>(
                 v-if="todos.length === 0"
                 class="py-8 text-center text-muted-foreground"
             >
-                No todos yet. Create one above.
+                {{ t('todos.empty') }}
             </p>
         </div>
     </div>

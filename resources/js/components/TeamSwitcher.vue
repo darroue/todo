@@ -2,6 +2,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { Check, ChevronsUpDown, Plus, Users } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CreateTeamModal from '@/components/CreateTeamModal.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +15,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { switchMethod } from '@/routes/teams';
 import type { Team } from '@/types';
+
+const { t } = useI18n();
 
 const props = withDefaults(
     defineProps<{
@@ -123,7 +126,7 @@ onUnmounted(() => {
                                 : 'truncate font-semibold'
                         "
                     >
-                        {{ currentTeam?.name ?? 'Select team' }}
+                        {{ currentTeam?.name ?? t('nav.select_team') }}
                     </span>
                 </div>
                 <ChevronsUpDown
@@ -143,7 +146,7 @@ onUnmounted(() => {
             :side-offset="props.inHeader ? undefined : 4"
         >
             <DropdownMenuLabel class="text-xs text-muted-foreground">
-                Teams
+                {{ t('nav.teams') }}
             </DropdownMenuLabel>
             <DropdownMenuItem
                 v-for="team in teams"
@@ -166,7 +169,7 @@ onUnmounted(() => {
                     @select.prevent
                 >
                     <Plus :class="plusIconClass" />
-                    <span class="text-muted-foreground">New team</span>
+                    <span class="text-muted-foreground">{{ t('nav.new_team') }}</span>
                 </DropdownMenuItem>
             </CreateTeamModal>
         </DropdownMenuContent>

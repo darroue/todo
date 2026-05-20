@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +24,8 @@ import {
 } from '@/components/ui/select';
 import { store as storeInvitation } from '@/routes/teams/invitations';
 import type { RoleOption, Team } from '@/types';
+
+const { t } = useI18n();
 
 type Props = {
     team: Team;
@@ -59,35 +62,35 @@ function handleOpenChange(value: boolean) {
                 @success="emit('update:open', false)"
             >
                 <DialogHeader>
-                    <DialogTitle>Invite a team member</DialogTitle>
+                    <DialogTitle>{{ t('teams.invite_modal.title') }}</DialogTitle>
                     <DialogDescription>
-                        Send an invitation to join this team.
+                        {{ t('teams.invite_modal.description') }}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div class="grid gap-4">
                     <div class="grid gap-2">
-                        <Label for="email">Email address</Label>
+                        <Label for="email">{{ t('common.email') }}</Label>
                         <Input
                             id="email"
                             name="email"
                             data-test="invite-email"
                             type="email"
-                            placeholder="colleague@example.com"
+                            :placeholder="t('teams.invite_modal.email_placeholder')"
                             required
                         />
                         <InputError :message="errors.email" />
                     </div>
 
                     <div class="grid gap-2">
-                        <Label for="role">Role</Label>
+                        <Label for="role">{{ t('teams.invite_modal.role') }}</Label>
                         <Select
                             v-model="inviteRole"
                             name="role"
                             data-test="invite-role"
                         >
                             <SelectTrigger class="w-full">
-                                <SelectValue placeholder="Select a role" />
+                                <SelectValue :placeholder="t('teams.invite_modal.role_placeholder')" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem
@@ -105,7 +108,7 @@ function handleOpenChange(value: boolean) {
 
                 <DialogFooter class="gap-2">
                     <DialogClose as-child>
-                        <Button variant="secondary"> Cancel </Button>
+                        <Button variant="secondary">{{ t('common.cancel') }}</Button>
                     </DialogClose>
 
                     <Button
@@ -113,7 +116,7 @@ function handleOpenChange(value: boolean) {
                         data-test="invite-submit"
                         :disabled="processing"
                     >
-                        Send invitation
+                        {{ t('teams.invite_modal.submit') }}
                     </Button>
                 </DialogFooter>
             </Form>
