@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useI18n } from '@/composables/useTranslation';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {

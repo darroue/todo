@@ -2,7 +2,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { Check, ChevronsUpDown, Plus, Users } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useI18n } from '@/composables/useTranslation';
 import CreateTeamModal from '@/components/CreateTeamModal.vue';
 import { Button } from '@/components/ui/button';
 import {

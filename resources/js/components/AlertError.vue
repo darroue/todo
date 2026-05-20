@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { AlertCircle } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useI18n } from '@/composables/useTranslation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const { t } = useI18n();

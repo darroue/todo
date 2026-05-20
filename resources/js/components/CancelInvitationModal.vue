@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useI18n } from '@/composables/useTranslation';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,

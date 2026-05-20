@@ -2,7 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { CheckSquare, LayoutGrid } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useI18n } from '@/composables/useTranslation';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';

@@ -3,7 +3,7 @@ import { Form, Head, Link, router, setLayoutProps, useForm, usePage } from '@ine
 import { useEcho } from '@laravel/echo-vue';
 import { ArrowLeft, Check, GripVertical, Paperclip, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, nextTick, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useI18n } from '@/composables/useTranslation';
 import { VueDraggable as VueDraggablePlus } from 'vue-draggable-plus';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';

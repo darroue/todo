@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
+import { loadLanguageAsync } from 'laravel-vue-i18n';
 import { computed, onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import type { Locale } from '@/composables/useLocale';
-import { i18n } from '@/i18n';
 import { update } from '@/routes/language';
 import type { Auth } from '@/types';
 
-const { locale: i18nLocale } = useI18n();
 const page = usePage<{ auth?: Auth }>();
 
 const locale = ref<Locale>('en');
@@ -21,15 +19,12 @@ const isAuthenticated = computed(() => !!page.props.auth?.user);
 
 onMounted(() => {
     const userLocale = page.props.auth?.user?.locale as Locale | undefined;
-    const stored = localStorage.getItem('locale') as Locale | null;
-    locale.value = userLocale ?? stored ?? 'en';
+    locale.value = userLocale ?? 'en';
 });
 
 function switchLocale(value: Locale) {
     locale.value = value;
-    i18n.global.locale.value = value;
-    i18nLocale.value = value;
-    localStorage.setItem('locale', value);
+    loadLanguageAsync(value);
 
     if (isAuthenticated.value) {
         router.patch(update().url, { locale: value }, { preserveScroll: true });

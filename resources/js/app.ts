@@ -3,7 +3,7 @@ import { configureEcho } from '@laravel/echo-vue';
 import Pusher from 'pusher-js';
 import { createApp, h } from 'vue';
 import { initializeTheme } from '@/composables/useAppearance';
-import { i18n } from '@/i18n';
+import { i18nVue } from 'laravel-vue-i18n';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
@@ -44,7 +44,13 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         createApp({ render: () => h(App, props) })
             .use(plugin)
-            .use(i18n)
+            .use(i18nVue, {
+                lang: document.documentElement.lang || 'en',
+                resolve: async (lang: string) => {
+                    const langs = import.meta.glob('../../lang/php_*.json');
+                    return await langs[`../../lang/php_${lang}.json`]?.();
+                },
+            })
             .mount(el!);
     },
 });

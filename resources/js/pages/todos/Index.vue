@@ -3,7 +3,7 @@ import { Form, Head, Link, router, setLayoutProps, usePage } from '@inertiajs/vu
 import { useEcho } from '@laravel/echo-vue';
 import { CheckSquare, Plus, Trash2 } from 'lucide-vue-next';
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { useI18n } from '@/composables/useTranslation';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';

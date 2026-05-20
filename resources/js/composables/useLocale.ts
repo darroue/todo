@@ -1,12 +1,12 @@
 import { router } from '@inertiajs/vue3';
+import { loadLanguageAsync } from 'laravel-vue-i18n';
 import { onMounted, ref } from 'vue';
-import { i18n } from '@/i18n';
 import { update } from '@/routes/language';
 
 export type Locale = 'en' | 'cs';
 
 export function initializeLocale(locale: Locale): void {
-    i18n.global.locale.value = locale;
+    loadLanguageAsync(locale);
 }
 
 const locale = ref<Locale>('en');
@@ -25,7 +25,7 @@ export function useLocale(initialLocale?: Locale): UseLocaleReturn {
 
     function updateLocale(value: Locale) {
         locale.value = value;
-        i18n.global.locale.value = value;
+        setLocale(value);
 
         router.patch(update().url, { locale: value }, { preserveScroll: true });
     }

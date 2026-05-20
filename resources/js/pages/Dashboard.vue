@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, setLayoutProps, usePage } from '@inertiajs/vue3';
 import { CheckSquare, ListTodo, SquareCheck } from 'lucide-vue-next';
-import { useI18n } from 'vue-i18n';
+import { useI18n } from '@/composables/useTranslation';
 import { dashboard } from '@/routes';
 import { index } from '@/routes/todos';
 import type { Team } from '@/types';
