@@ -3,10 +3,16 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
+use Google\Cloud\Storage\StorageClient;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use League\Flysystem\Filesystem;
+use League\Flysystem\GoogleCloudStorage\GoogleCloudStorageAdapter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,11 +30,32 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureGcs();
     }
 
     /**
      * Configure default behaviors for production-ready applications.
      */
+    protected function configureGcs(): void
+    {
+        Storage::extend('gcs', function (Application $app, array $config) {
+            $storageClient = new StorageClient([
+                'keyFile' => json_decode($config['credentials'], true),
+                'projectId' => $config['project_id'],
+            ]);
+
+            $adapter = new GoogleCloudStorageAdapter(
+                $storageClient->bucket($config['bucket']),
+            );
+
+            return new FilesystemAdapter(
+                new Filesystem($adapter, $config),
+                $adapter,
+                $config,
+            );
+        });
+    }
+
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);

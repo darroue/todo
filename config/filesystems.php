@@ -47,6 +47,16 @@ return [
             'report' => false,
         ],
 
+        'gcs' => [
+            'driver' => 'gcs',
+            'credentials' => env('GCS_CREDENTIALS'),
+            'project_id' => env('GCS_PROJECT_ID', 'petr-radous'),
+            'bucket' => env('GCS_BUCKET'),
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

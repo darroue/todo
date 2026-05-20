@@ -39,7 +39,9 @@ env:
     SESSION_LIFETIME: "120"
     QUEUE_CONNECTION: database
     CACHE_STORE: database
-    FILESYSTEM_DISK: local
+    FILESYSTEM_DISK: gcs
+    GCS_BUCKET: todo_petr-radous
+    GCS_PROJECT_ID: petr-radous
     MAIL_MAILER: smtp
     MAIL_HOST: smtp.forpsi.com
     MAIL_PORT: "587"
@@ -58,6 +60,7 @@ env:
     - MAIL_PASSWORD
     - REVERB_APP_KEY
     - REVERB_APP_SECRET
+    - GCS_CREDENTIALS
 
 volumes:
   - todo-storage:/var/www/html/storage/app
