@@ -269,7 +269,7 @@ useEcho<{ todoId: number }>(
                 :class="task.isCompleted ? 'opacity-60' : ''"
             >
             <div class="flex items-start justify-between">
-                <div class="flex items-start gap-3">
+                <div class="flex flex-1 min-w-0 items-start gap-3">
                     <GripVertical class="drag-handle mt-0.5 h-4 w-4 shrink-0 cursor-grab text-muted-foreground/40 active:cursor-grabbing" />
 
                     <Form
@@ -335,7 +335,7 @@ useEcho<{ todoId: number }>(
                     </div>
                 </div>
 
-                <div class="flex shrink-0 items-start gap-1">
+                <div v-if="editingTaskId !== task.id" class="flex shrink-0 items-start gap-1">
                     <label
                         :for="`attachment-${task.id}`"
                         class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
