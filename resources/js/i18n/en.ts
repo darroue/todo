@@ -5,7 +5,7 @@ export default {
         warning: 'Warning',
         caution: 'Please proceed with caution, this cannot be undone.',
         email: 'Email address',
-        email_placeholder: 'email@example.com',
+        email_placeholder: "email{'@'}example.com",
         password: 'Password',
         confirm_password: 'Confirm password',
         name: 'Name',
@@ -22,6 +22,11 @@ export default {
         light: 'Light',
         dark: 'Dark',
         system: 'System',
+    },
+
+    language: {
+        en: 'English',
+        cs: 'Czech',
     },
 
     nav: {
@@ -126,6 +131,11 @@ export default {
             title: 'Appearance settings',
             description: "Update your account's appearance settings",
         },
+        language: {
+            label: 'Language',
+            title: 'Language settings',
+            description: 'Choose your preferred application language',
+        },
         delete_account: {
             title: 'Delete account',
             description: 'Delete your account and all of its resources',
@@ -226,7 +236,7 @@ export default {
         invite_modal: {
             title: 'Invite a team member',
             description: 'Send an invitation to join this team.',
-            email_placeholder: 'colleague@example.com',
+            email_placeholder: "colleague{'@'}example.com",
             role: 'Role',
             role_placeholder: 'Select a role',
             submit: 'Send invitation',
