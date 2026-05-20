@@ -50,7 +50,7 @@ class TaskAttachmentController extends Controller
 
         broadcast(new TaskChanged($currentTeam, $todo, $task, 'attachment_deleted'))->toOthers();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Attachment deleted.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.attachment_deleted')]);
 
         return back();
     }

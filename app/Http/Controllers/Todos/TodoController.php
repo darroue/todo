@@ -45,7 +45,7 @@ class TodoController extends Controller
 
         broadcast(new TodoChanged($currentTeam, $todo, 'created'))->toOthers();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo created.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.todo_created')]);
 
         return to_route('todos.show', ['current_team' => $currentTeam->slug, 'todo' => $todo->id]);
     }
@@ -89,9 +89,9 @@ class TodoController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => __('Todo deleted.'),
+            'message' => __('flash.todo_deleted'),
             'action' => [
-                'label' => __('Undo'),
+                'label' => __('flash.undo'),
                 'url' => route('todos.restore', ['current_team' => $currentTeam->slug, 'todo' => $todo->id]),
             ],
         ]);
@@ -109,7 +109,7 @@ class TodoController extends Controller
 
         broadcast(new TodoChanged($currentTeam, $todo, 'restored'))->toOthers();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Todo restored.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.todo_restored')]);
 
         return to_route('todos.index', ['current_team' => $currentTeam->slug]);
     }

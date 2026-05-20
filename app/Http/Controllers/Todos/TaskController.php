@@ -29,7 +29,7 @@ class TaskController extends Controller
 
         broadcast(new TaskChanged($currentTeam, $todo, $task, 'created'))->toOthers();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Task added.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.task_added')]);
 
         return back();
     }
@@ -75,9 +75,9 @@ class TaskController extends Controller
 
         Inertia::flash('toast', [
             'type' => 'success',
-            'message' => __('Task deleted.'),
+            'message' => __('flash.task_deleted'),
             'action' => [
-                'label' => __('Undo'),
+                'label' => __('flash.undo'),
                 'url' => route('todos.tasks.restore', ['current_team' => $currentTeam->slug, 'todo' => $todo->id, 'task' => $task->id]),
             ],
         ]);
@@ -118,7 +118,7 @@ class TaskController extends Controller
 
         broadcast(new TaskChanged($currentTeam, $todo, $task, 'restored'))->toOthers();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Task restored.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.task_restored')]);
 
         return back();
     }

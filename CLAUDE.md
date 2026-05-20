@@ -209,7 +209,11 @@ Vue components must have a single root element.
 
 </laravel-boost-guidelines>
 
-## Vue i18n
+## i18n
 
-- Never hardcode translation strings in Vue templates or JS/TS. Always use `$t('key')` in templates or `const { t } = useI18n()` in `<script setup>`.
-- If a key doesn't exist yet, add it to the appropriate locale file.
+- PHP lang files are the single source of truth for all translations (BE + FE).
+- Never hardcode translation strings in Vue templates or JS/TS. Always use `t('key')` via `const { t } = useI18n()` from `@/composables/useTranslation` in `<script setup>`.
+- Never hardcode translation strings in PHP. Always use `__('key')`.
+- Page/component strings: add to `lang/en/*.php` and `lang/cs/*.php` (nested, dot-notation: `todos.title`). Interpolation uses `:param` style.
+- BE flash messages / validation: add to `lang/en.json` and `lang/cs.json` (string-key style: `"Task deleted."`).
+- Do NOT edit or recreate `resources/js/i18n/` — it was deleted. FE translations come from PHP files via `laravel-vue-i18n` Vite plugin.
