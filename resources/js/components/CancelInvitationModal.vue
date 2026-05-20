@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -13,6 +14,8 @@ import {
 } from '@/components/ui/dialog';
 import { destroy as destroyInvitation } from '@/routes/teams/invitations';
 import type { Team, TeamInvitation } from '@/types';
+
+const { t } = useI18n();
 
 type Props = {
     team: Team;
@@ -44,17 +47,15 @@ const cancelInvitation = () => {
     <Dialog :open="props.open" @update:open="emit('update:open', $event)">
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Cancel invitation</DialogTitle>
+                <DialogTitle>{{ t('teams.cancel_invitation_modal.title') }}</DialogTitle>
                 <DialogDescription>
-                    Are you sure you want to cancel the invitation for
-                    <strong>{{ props.invitation?.email }}</strong
-                    >?
+                    {{ t('teams.cancel_invitation_modal.description', { email: props.invitation?.email }) }}
                 </DialogDescription>
             </DialogHeader>
 
             <DialogFooter class="gap-2">
                 <DialogClose as-child>
-                    <Button variant="secondary"> Keep invitation </Button>
+                    <Button variant="secondary">{{ t('teams.cancel_invitation_modal.keep') }}</Button>
                 </DialogClose>
 
                 <Button
@@ -63,7 +64,7 @@ const cancelInvitation = () => {
                     :disabled="processing"
                     @click="cancelInvitation"
                 >
-                    Cancel invitation
+                    {{ t('teams.cancel_invitation_modal.submit') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

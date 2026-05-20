@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { store } from '@/routes/teams';
 
+const { t } = useI18n();
 const open = ref(false);
 const formKey = ref(0);
 
@@ -43,19 +45,19 @@ function handleOpenChange(value: boolean) {
                 @success="open = false"
             >
                 <DialogHeader>
-                    <DialogTitle>Create a new team</DialogTitle>
+                    <DialogTitle>{{ t('teams.create_modal.title') }}</DialogTitle>
                     <DialogDescription>
-                        Create a new team to collaborate with others.
+                        {{ t('teams.create_modal.description') }}
                     </DialogDescription>
                 </DialogHeader>
 
                 <div class="grid gap-2">
-                    <Label for="name">Team name</Label>
+                    <Label for="name">{{ t('teams.name_field') }}</Label>
                     <Input
                         id="name"
                         name="name"
                         data-test="create-team-name"
-                        placeholder="My team"
+                        :placeholder="t('teams.create_modal.name_placeholder')"
                         required
                     />
                     <InputError :message="errors.name" />
@@ -63,7 +65,7 @@ function handleOpenChange(value: boolean) {
 
                 <DialogFooter class="gap-2">
                     <DialogClose as-child>
-                        <Button variant="secondary"> Cancel </Button>
+                        <Button variant="secondary">{{ t('common.cancel') }}</Button>
                     </DialogClose>
 
                     <Button
@@ -71,7 +73,7 @@ function handleOpenChange(value: boolean) {
                         data-test="create-team-submit"
                         :disabled="processing"
                     >
-                        Create team
+                        {{ t('teams.create_modal.submit') }}
                     </Button>
                 </DialogFooter>
             </Form>
