@@ -1,50 +1,80 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import { Head, Link } from '@inertiajs/vue3';
+import { CheckSquare, ListTodo, SquareCheck } from 'lucide-vue-next';
 import { dashboard } from '@/routes';
+import { index } from '@/routes/todos';
 import type { Team } from '@/types';
+
+type Props = {
+    stats: {
+        todosCount: number;
+        tasksCount: number;
+        completedTasksCount: number;
+    };
+};
+
+const props = defineProps<Props>();
 
 defineOptions({
     layout: (props: { currentTeam?: Team | null }) => ({
         breadcrumbs: [
             {
                 title: 'Dashboard',
-                href: props.currentTeam
-                    ? dashboard(props.currentTeam.slug)
-                    : '/',
+                href: props.currentTeam ? dashboard(props.currentTeam.slug).url : '/',
             },
         ],
     }),
 });
+
+const completionRate = () => {
+    if (props.stats.tasksCount === 0) return 0;
+    return Math.round((props.stats.completedTasksCount / props.stats.tasksCount) * 100);
+};
 </script>
 
 <template>
     <Head title="Dashboard" />
 
-    <div
-        class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-    >
+    <div class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
         <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+            <!-- Todos count -->
+            <Link
+                :href="index(($page.props.currentTeam as Team).slug).url"
+                class="flex flex-col gap-3 rounded-xl border border-sidebar-border/70 p-6 transition-colors hover:bg-muted/50 dark:border-sidebar-border"
             >
-                <PlaceholderPattern />
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-muted-foreground">Todos</span>
+                    <ListTodo class="h-5 w-5 text-muted-foreground" />
+                </div>
+                <span class="text-3xl font-bold">{{ stats.todosCount }}</span>
+            </Link>
+
+            <!-- Tasks count -->
+            <div class="flex flex-col gap-3 rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-muted-foreground">Úkoly</span>
+                    <CheckSquare class="h-5 w-5 text-muted-foreground" />
+                </div>
+                <span class="text-3xl font-bold">{{ stats.tasksCount }}</span>
+                <span class="text-sm text-muted-foreground">
+                    {{ stats.completedTasksCount }} hotovo
+                </span>
             </div>
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
+
+            <!-- Completion rate -->
+            <div class="flex flex-col gap-3 rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-muted-foreground">Splněno</span>
+                    <SquareCheck class="h-5 w-5 text-muted-foreground" />
+                </div>
+                <span class="text-3xl font-bold">{{ completionRate() }}%</span>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                        class="h-full rounded-full bg-primary transition-all"
+                        :style="{ width: `${completionRate()}%` }"
+                    />
+                </div>
             </div>
-            <div
-                class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
-            >
-                <PlaceholderPattern />
-            </div>
-        </div>
-        <div
-            class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border"
-        >
-            <PlaceholderPattern />
         </div>
     </div>
 </template>

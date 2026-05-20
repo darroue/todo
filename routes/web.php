@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\Todos\TaskAttachmentController;
 use App\Http\Controllers\Todos\TaskController;
@@ -12,7 +13,7 @@ Route::inertia('/', 'Welcome')->name('home');
 Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
     ->group(function () {
-        Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+        Route::get('dashboard', DashboardController::class)->name('dashboard');
 
         Route::get('todos', [TodoController::class, 'index'])->name('todos.index');
         Route::post('todos', [TodoController::class, 'store'])->name('todos.store');
