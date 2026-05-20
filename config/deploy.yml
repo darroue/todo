@@ -1,0 +1,66 @@
+service: todo
+
+image: petr-radous/todo/web
+
+servers:
+  web:
+    - dn6
+
+registry:
+  server: localhost:5000
+
+proxy:
+  ssl: true
+  host: todo.petr-radous.cz
+  app_port: 8000
+
+builder:
+  arch: amd64
+
+env:
+  clear:
+    APP_NAME: Todo
+    APP_ENV: production
+    APP_DEBUG: "false"
+    APP_URL: https://todo.petr-radous.cz
+    LOG_CHANNEL: stderr
+    LOG_LEVEL: error
+    DB_CONNECTION: pgsql
+    DB_HOST: todo-postgres
+    DB_PORT: "5432"
+    DB_DATABASE: todo_production
+    DB_USERNAME: todo_user
+    SESSION_DRIVER: database
+    SESSION_LIFETIME: "120"
+    QUEUE_CONNECTION: database
+    CACHE_STORE: database
+    FILESYSTEM_DISK: local
+    BROADCAST_CONNECTION: log
+    MAIL_MAILER: smtp
+    MAIL_HOST: smtp.forpsi.com
+    MAIL_PORT: "587"
+    MAIL_ENCRYPTION: tls
+    MAIL_FROM_ADDRESS: noreply@petr-radous.cz
+    MAIL_FROM_NAME: Todo
+    MAIL_USERNAME: noreply@petr-radous.cz
+  secret:
+    - APP_KEY
+    - DB_PASSWORD
+    - MAIL_PASSWORD
+
+volumes:
+  - todo-storage:/var/www/html/storage/app
+
+accessories:
+  postgres:
+    image: postgres:17.6-alpine
+    host: dn6
+    env:
+      clear:
+        PGDATA: /var/lib/postgresql/data_persistent
+        POSTGRES_USER: todo_user
+        POSTGRES_DB: todo_production
+      secret:
+        - POSTGRES_PASSWORD
+    volumes:
+      - todo-data:/var/lib/postgresql/data_persistent

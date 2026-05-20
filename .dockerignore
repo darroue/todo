@@ -1,0 +1,12 @@
+vendor/
+node_modules/
+.git/
+.env
+.env.*
+storage/app/
+storage/logs/
+bootstrap/cache/
+public/build/
+tests/
+.kamal/
+*.log
