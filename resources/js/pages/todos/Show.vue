@@ -1,16 +1,25 @@
 <script setup lang="ts">
 import { Form, Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
-import { ArrowLeft, Check, Plus, Trash2 } from 'lucide-vue-next';
-import { computed, nextTick, ref } from 'vue';
+import { ArrowLeft, Check, Paperclip, Plus, Trash2, X } from 'lucide-vue-next';
+import { computed, nextTick, ref, watch } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { index, show } from '@/routes/todos';
+import { store as storeAttachment, destroy as destroyAttachment } from '@/routes/todos/tasks/attachments';
 import { destroy as destroyTask, store as storeTask, update as updateTask } from '@/routes/todos/tasks';
-import type { Task, Team, TodoDetail } from '@/types';
+import type { Task, TaskAttachment, Team, TodoDetail } from '@/types';
+
+type UploadQueueItem = {
+    id: string;
+    file: File;
+    task: Task;
+    status: 'queued' | 'uploading';
+    abortController?: AbortController;
+};
 
 type Props = {
     todo: TodoDetail;
@@ -49,6 +58,8 @@ const editTitle = ref('');
 const editDescription = ref('');
 const editTitleEl = ref<HTMLInputElement | null>(null);
 
+const uploadQueue = ref<UploadQueueItem[]>([]);
+
 function startEdit(task: Task) {
     editingTaskId.value = task.id;
     editTitle.value = task.title;
@@ -76,6 +87,91 @@ function saveEdit(task: Task) {
             editingTaskId.value = null;
         },
     });
+}
+
+function taskRouteArgs(task: Task) {
+    return { current_team: currentTeamSlug(), todo: props.todo.id, task: task.id };
+}
+
+function attachmentRouteArgs(task: Task, attachment: TaskAttachment) {
+    return { current_team: currentTeamSlug(), todo: props.todo.id, task: task.id, attachment: attachment.id };
+}
+
+function uploadAttachment(task: Task, event: Event) {
+    const files = (event.target as HTMLInputElement).files;
+
+    if (!files || files.length === 0) {
+        return;
+    }
+
+    for (const file of Array.from(files)) {
+        uploadQueue.value.push({
+            id: crypto.randomUUID(),
+            file,
+            task,
+            status: 'queued',
+        });
+    }
+
+    (event.target as HTMLInputElement).value = '';
+}
+
+function cancelUpload(item: UploadQueueItem) {
+    if (item.status === 'uploading' && item.abortController) {
+        item.abortController.abort();
+    }
+    uploadQueue.value = uploadQueue.value.filter((q) => q.id !== item.id);
+}
+
+async function processQueue() {
+    const isUploading = uploadQueue.value.some((q) => q.status === 'uploading');
+    if (isUploading) {
+        return;
+    }
+
+    const next = uploadQueue.value.find((q) => q.status === 'queued');
+    if (!next) {
+        return;
+    }
+
+    const abortController = new AbortController();
+    next.status = 'uploading';
+    next.abortController = abortController;
+
+    const url = storeAttachment(taskRouteArgs(next.task)).url;
+    const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+
+    const formData = new FormData();
+    formData.append('file', next.file);
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                Accept: 'application/json',
+            },
+            body: formData,
+            signal: abortController.signal,
+        });
+
+        if (response.ok) {
+            uploadQueue.value = uploadQueue.value.filter((q) => q.id !== next.id);
+            router.reload({ only: ['tasks'] });
+        } else {
+            uploadQueue.value = uploadQueue.value.filter((q) => q.id !== next.id);
+        }
+    } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+            uploadQueue.value = uploadQueue.value.filter((q) => q.id !== next.id);
+        }
+    }
+}
+
+watch(uploadQueue, processQueue, { deep: true });
+
+function queueItemsForTask(task: Task): UploadQueueItem[] {
+    return uploadQueue.value.filter((q) => q.task.id === task.id);
 }
 
 useEcho<{ todoId: number }>(
@@ -148,12 +244,13 @@ useEcho<{ todoId: number }>(
                 v-for="task in tasks"
                 :key="task.id"
                 data-test="task-row"
-                class="flex items-start justify-between rounded-lg border p-4"
+                class="rounded-lg border p-4"
                 :class="task.isCompleted ? 'opacity-60' : ''"
             >
+            <div class="flex items-start justify-between">
                 <div class="flex items-start gap-3">
                     <Form
-                        v-bind="updateTask.form({ ...taskArgs(), task: task.id })"
+                        v-bind="updateTask.form(taskRouteArgs(task))"
                         class="mt-0.5"
                     >
                         <input type="hidden" name="isCompleted" :value="task.isCompleted ? '0' : '1'" />
@@ -215,16 +312,103 @@ useEcho<{ todoId: number }>(
                     </div>
                 </div>
 
-                <Form v-bind="destroyTask.form({ ...taskArgs(), task: task.id })">
-                    <Button
-                        type="submit"
-                        variant="ghost"
-                        size="sm"
-                        :data-test="`task-delete-${task.id}`"
+                <div class="flex shrink-0 items-start gap-1">
+                    <label
+                        :for="`attachment-${task.id}`"
+                        class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        title="Upload attachment"
                     >
-                        <Trash2 class="h-4 w-4 text-destructive" />
-                    </Button>
-                </Form>
+                        <Paperclip class="h-4 w-4" />
+                        <input
+                            :id="`attachment-${task.id}`"
+                            type="file"
+                            multiple
+                            class="sr-only"
+                            :data-test="`task-attachment-input-${task.id}`"
+                            @change="uploadAttachment(task, $event)"
+                        />
+                    </label>
+                    <Form v-bind="destroyTask.form(taskRouteArgs(task))">
+                        <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            class="cursor-pointer"
+                            :data-test="`task-delete-${task.id}`"
+                        >
+                            <Trash2 class="h-4 w-4 text-destructive" />
+                        </Button>
+                    </Form>
+                </div>
+            </div>
+
+            <!-- Attachments -->
+            <div v-if="task.attachments.length > 0 || queueItemsForTask(task).length > 0" class="mt-3 flex flex-wrap gap-2 pl-8">
+                <div
+                    v-for="attachment in task.attachments"
+                    :key="attachment.id"
+                    class="group relative"
+                    :data-test="`task-attachment-${attachment.id}`"
+                >
+                    <a :href="attachment.url" target="_blank" rel="noopener noreferrer">
+                        <img
+                            v-if="attachment.isImage"
+                            :src="attachment.url"
+                            :alt="attachment.filename"
+                            class="h-20 w-20 rounded-md border object-cover transition-opacity group-hover:opacity-75"
+                        />
+                        <div
+                            v-else
+                            class="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-md border bg-muted text-center transition-colors group-hover:bg-muted/70"
+                        >
+                            <span class="text-xs font-bold uppercase text-muted-foreground">
+                                {{ attachment.extension }}
+                            </span>
+                            <span class="line-clamp-2 break-all px-1 text-[10px] text-muted-foreground">
+                                {{ attachment.filename }}
+                            </span>
+                        </div>
+                    </a>
+                    <Form
+                        v-if="!task.isCompleted"
+                        v-bind="destroyAttachment.form(attachmentRouteArgs(task, attachment))"
+                        class="absolute -right-1.5 -top-1.5 hidden group-hover:block"
+                    >
+                        <button
+                            type="submit"
+                            class="flex h-4 w-4 cursor-pointer items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+                            :data-test="`task-attachment-delete-${attachment.id}`"
+                        >
+                            <X class="h-2.5 w-2.5" />
+                        </button>
+                    </Form>
+                </div>
+
+                <!-- Upload queue items -->
+                <div
+                    v-for="item in queueItemsForTask(task)"
+                    :key="item.id"
+                    class="relative flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-md border bg-muted text-center"
+                    :class="item.status === 'uploading' ? 'animate-pulse' : ''"
+                >
+                    <span class="line-clamp-2 break-all px-1 text-[10px] text-muted-foreground">
+                        {{ item.file.name }}
+                    </span>
+                    <span
+                        class="rounded px-1 py-0.5 text-[9px] font-medium"
+                        :class="item.status === 'uploading' ? 'bg-blue-100 text-blue-700' : 'bg-muted-foreground/20 text-muted-foreground'"
+                    >
+                        {{ item.status === 'uploading' ? 'Nahrávání…' : 'Ve frontě' }}
+                    </span>
+                    <button
+                        type="button"
+                        class="absolute -right-1.5 -top-1.5 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+                        @click="cancelUpload(item)"
+                    >
+                        <X class="h-2.5 w-2.5" />
+                    </button>
+                </div>
+            </div>
             </div>
 
             <p

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable(['todo_id', 'title', 'description', 'completed_at'])]
@@ -21,6 +22,14 @@ class Task extends Model
     public function todo(): BelongsTo
     {
         return $this->belongsTo(Todo::class);
+    }
+
+    /**
+     * @return HasMany<TaskAttachment, $this>
+     */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(TaskAttachment::class);
     }
 
     protected function casts(): array

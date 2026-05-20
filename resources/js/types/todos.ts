@@ -6,12 +6,23 @@ export type Todo = {
     createdAt: string;
 };
 
+export type TaskAttachment = {
+    id: number;
+    filename: string;
+    mimeType: string;
+    size: number;
+    url: string;
+    isImage: boolean;
+    extension: string;
+};
+
 export type Task = {
     id: number;
     title: string;
     description: string | null;
     isCompleted: boolean;
     completedAt: string | null;
+    attachments: TaskAttachment[];
 };
 
 export type TodoDetail = {

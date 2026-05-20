@@ -97,6 +97,7 @@ useEcho<{ action: string }>(
                         type="submit"
                         variant="ghost"
                         size="sm"
+                        class="cursor-pointer"
                         data-test="todo-delete-button"
                     >
                         <Trash2 class="h-4 w-4 text-destructive" />

@@ -60,12 +60,21 @@ class TodoController extends Controller
                 'title' => $todo->title,
                 'createdAt' => $todo->created_at->toISOString(),
             ],
-            'tasks' => $todo->tasks()->orderBy('created_at')->get()->map(fn ($task) => [
+            'tasks' => $todo->tasks()->with('attachments')->orderBy('created_at')->get()->map(fn ($task) => [
                 'id' => $task->id,
                 'title' => $task->title,
                 'description' => $task->description,
                 'isCompleted' => $task->completed_at !== null,
                 'completedAt' => $task->completed_at?->toISOString(),
+                'attachments' => $task->attachments->map(fn ($a) => [
+                    'id' => $a->id,
+                    'filename' => $a->filename,
+                    'mimeType' => $a->mime_type,
+                    'size' => $a->size,
+                    'url' => $a->url(),
+                    'isImage' => $a->isImage(),
+                    'extension' => $a->extension(),
+                ]),
             ]),
         ]);
     }

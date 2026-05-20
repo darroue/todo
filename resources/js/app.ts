@@ -7,7 +7,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-window.Pusher = Pusher;
+(window as unknown as { Pusher: typeof Pusher }).Pusher = Pusher;
 
 configureEcho({
     broadcaster: 'reverb',

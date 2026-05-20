@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Teams\TeamInvitationController;
+use App\Http\Controllers\Todos\TaskAttachmentController;
 use App\Http\Controllers\Todos\TaskController;
 use App\Http\Controllers\Todos\TodoController;
 use App\Http\Middleware\EnsureTeamMembership;
@@ -23,6 +24,8 @@ Route::prefix('{current_team}')
         Route::patch('todos/{todo}/tasks/{task}', [TaskController::class, 'update'])->name('todos.tasks.update');
         Route::delete('todos/{todo}/tasks/{task}', [TaskController::class, 'destroy'])->name('todos.tasks.destroy');
         Route::post('todos/{todo}/tasks/{task}/restore', [TaskController::class, 'restore'])->name('todos.tasks.restore');
+        Route::post('todos/{todo}/tasks/{task}/attachments', [TaskAttachmentController::class, 'store'])->name('todos.tasks.attachments.store');
+        Route::delete('todos/{todo}/tasks/{task}/attachments/{attachment}', [TaskAttachmentController::class, 'destroy'])->name('todos.tasks.attachments.destroy');
     });
 
 Route::middleware(['auth'])->group(function () {

@@ -5,7 +5,8 @@
       "Bash(vendor/bin/pint *)",
       "Bash(npm install *)",
       "mcp__laravel-boost__search-docs",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npx vue-tsc *)"
     ]
   },
   "enabledMcpjsonServers": [
