@@ -59,7 +59,7 @@ const teamId = computed(() => page.props.currentTeam?.id);
 const editingTaskId = ref<number | null>(null);
 const editTitle = ref('');
 const editDescription = ref('');
-const editTitleEl = ref<HTMLInputElement | null>(null);
+const editTitleEl = ref<HTMLInputElement[]>([]);
 
 const uploadQueue = ref<UploadQueueItem[]>([]);
 
@@ -73,7 +73,7 @@ function startEdit(task: Task) {
     editingTaskId.value = task.id;
     editTitle.value = task.title;
     editDescription.value = task.description ?? '';
-    nextTick(() => editTitleEl.value?.focus());
+    nextTick(() => editTitleEl.value[0]?.focus());
 }
 
 function cancelEdit() {
