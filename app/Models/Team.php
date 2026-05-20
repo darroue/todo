@@ -82,6 +82,16 @@ class Team extends Model
     }
 
     /**
+     * Get all todos for this team.
+     *
+     * @return HasMany<Todo, $this>
+     */
+    public function todos(): HasMany
+    {
+        return $this->hasMany(Todo::class);
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

@@ -63,7 +63,11 @@ const switchTeam = (team: Team) => {
             const segment = `/${previousTeamSlug}`;
 
             if (currentUrl.includes(segment)) {
-                router.visit(currentUrl.replace(segment, `/${team.slug}`), {
+                const newUrl = currentUrl.replace(segment, `/${team.slug}`);
+                const parts = newUrl.split('/').filter(Boolean);
+                const safeUrl = parts.length > 2 ? `/${parts[0]}/${parts[1]}` : newUrl;
+
+                router.visit(safeUrl, {
                     replace: true,
                 });
 
