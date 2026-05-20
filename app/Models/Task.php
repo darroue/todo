@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['todo_id', 'title', 'description', 'completed_at'])]
+#[Fillable(['todo_id', 'title', 'description', 'completed_at', 'order'])]
 class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Form, Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
-import { ArrowLeft, Check, Paperclip, Plus, Trash2, X } from 'lucide-vue-next';
+import { ArrowLeft, Check, GripVertical, Paperclip, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, nextTick, ref, watch } from 'vue';
+import { VueDraggable as VueDraggablePlus } from 'vue-draggable-plus';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { index, show } from '@/routes/todos';
 import { store as storeAttachment, destroy as destroyAttachment } from '@/routes/todos/tasks/attachments';
-import { destroy as destroyTask, store as storeTask, update as updateTask } from '@/routes/todos/tasks';
+import { destroy as destroyTask, reorder as reorderTasks, store as storeTask, update as updateTask } from '@/routes/todos/tasks';
 import type { Task, TaskAttachment, Team, TodoDetail } from '@/types';
 
 type UploadQueueItem = {
@@ -60,7 +61,13 @@ const editTitleEl = ref<HTMLInputElement | null>(null);
 
 const uploadQueue = ref<UploadQueueItem[]>([]);
 
+const taskList = ref<Task[]>([]);
+watch(() => props.tasks, (val) => { taskList.value = [...val]; }, { immediate: true });
+
 function startEdit(task: Task) {
+    if (task.isCompleted) {
+        return;
+    }
     editingTaskId.value = task.id;
     editTitle.value = task.title;
     editDescription.value = task.description ?? '';
@@ -87,6 +94,12 @@ function saveEdit(task: Task) {
             editingTaskId.value = null;
         },
     });
+}
+
+function onDragEnd() {
+    router.patch(reorderTasks(taskArgs()).url, {
+        ids: taskList.value.map((t) => t.id),
+    }, { preserveScroll: true });
 }
 
 function taskRouteArgs(task: Task) {
@@ -239,9 +252,15 @@ useEcho<{ todoId: number }>(
         </Form>
 
         <!-- Task list -->
-        <div class="space-y-2">
+        <VueDraggablePlus
+            v-model="taskList"
+            handle=".drag-handle"
+            :animation="150"
+            class="space-y-2"
+            @end="onDragEnd"
+        >
             <div
-                v-for="task in tasks"
+                v-for="task in taskList"
                 :key="task.id"
                 data-test="task-row"
                 class="rounded-lg border p-4"
@@ -249,6 +268,8 @@ useEcho<{ todoId: number }>(
             >
             <div class="flex items-start justify-between">
                 <div class="flex items-start gap-3">
+                    <GripVertical class="drag-handle mt-0.5 h-4 w-4 shrink-0 cursor-grab text-muted-foreground/40 active:cursor-grabbing" />
+
                     <Form
                         v-bind="updateTask.form(taskRouteArgs(task))"
                         class="mt-0.5"
@@ -265,7 +286,7 @@ useEcho<{ todoId: number }>(
                     </Form>
 
                     <div class="flex-1">
-                        <template v-if="editingTaskId === task.id">
+                        <template v-if="editingTaskId === task.id && !task.isCompleted">
                             <input
                                 ref="editTitleEl"
                                 v-model="editTitle"
@@ -410,13 +431,13 @@ useEcho<{ todoId: number }>(
                 </div>
             </div>
             </div>
+        </VueDraggablePlus>
 
-            <p
-                v-if="tasks.length === 0"
-                class="py-8 text-center text-muted-foreground"
-            >
-                No tasks yet. Add one above.
-            </p>
-        </div>
+        <p
+            v-if="tasks.length === 0"
+            class="py-8 text-center text-muted-foreground"
+        >
+            No tasks yet. Add one above.
+        </p>
     </div>
 </template>

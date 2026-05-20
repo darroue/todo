@@ -21,6 +21,7 @@ Route::prefix('{current_team}')
         Route::post('todos/{todo}/restore', [TodoController::class, 'restore'])->name('todos.restore');
 
         Route::post('todos/{todo}/tasks', [TaskController::class, 'store'])->name('todos.tasks.store');
+        Route::patch('todos/{todo}/tasks/reorder', [TaskController::class, 'reorder'])->name('todos.tasks.reorder');
         Route::patch('todos/{todo}/tasks/{task}', [TaskController::class, 'update'])->name('todos.tasks.update');
         Route::delete('todos/{todo}/tasks/{task}', [TaskController::class, 'destroy'])->name('todos.tasks.destroy');
         Route::post('todos/{todo}/tasks/{task}/restore', [TaskController::class, 'restore'])->name('todos.tasks.restore');

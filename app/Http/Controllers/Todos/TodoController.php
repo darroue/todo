@@ -60,7 +60,7 @@ class TodoController extends Controller
                 'title' => $todo->title,
                 'createdAt' => $todo->created_at->toISOString(),
             ],
-            'tasks' => $todo->tasks()->with('attachments')->orderBy('created_at')->get()->map(fn ($task) => [
+            'tasks' => $todo->tasks()->with('attachments')->orderBy('order')->get()->map(fn ($task) => [
                 'id' => $task->id,
                 'title' => $task->title,
                 'description' => $task->description,

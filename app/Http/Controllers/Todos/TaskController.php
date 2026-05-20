@@ -22,7 +22,10 @@ class TaskController extends Controller
             'description' => ['nullable', 'string'],
         ]);
 
-        $task = $todo->tasks()->create($validated);
+        $task = $todo->tasks()->create([
+            ...$validated,
+            'order' => $todo->tasks()->max('order') + 1,
+        ]);
 
         broadcast(new TaskChanged($currentTeam, $todo, $task, 'created'))->toOthers();
 
@@ -78,6 +81,27 @@ class TaskController extends Controller
                 'url' => route('todos.tasks.restore', ['current_team' => $currentTeam->slug, 'todo' => $todo->id, 'task' => $task->id]),
             ],
         ]);
+
+        return back();
+    }
+
+    public function reorder(Request $request, Team $currentTeam, Todo $todo): RedirectResponse
+    {
+        abort_unless($todo->team_id === $currentTeam->id, 404);
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['required', 'integer'],
+        ]);
+
+        foreach ($validated['ids'] as $order => $id) {
+            $todo->tasks()->where('id', $id)->update(['order' => $order]);
+        }
+
+        $anyTask = $todo->tasks()->first();
+        if ($anyTask) {
+            broadcast(new TaskChanged($currentTeam, $todo, $anyTask, 'reordered'))->toOthers();
+        }
 
         return back();
     }
