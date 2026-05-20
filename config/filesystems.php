@@ -54,8 +54,8 @@ return [
             'bucket' => env('GCS_BUCKET'),
             'url' => 'https://storage.googleapis.com/'.env('GCS_BUCKET'),
             'visibility' => 'public',
-            'throw' => false,
-            'report' => false,
+            'throw' => true,
+            'report' => true,
         ],
 
         's3' => [
