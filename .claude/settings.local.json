@@ -6,7 +6,8 @@
       "Bash(npm install *)",
       "mcp__laravel-boost__search-docs",
       "Bash(npm run *)",
-      "Bash(npx vue-tsc *)"
+      "Bash(npx vue-tsc *)",
+      "Bash(docker buildx *)"
     ]
   },
   "enabledMcpjsonServers": [

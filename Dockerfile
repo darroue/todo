@@ -1,13 +1,29 @@
-# Stage 1: Build frontend assets
+# Stage 1: Generate Wayfinder TypeScript types (needs PHP + routes)
+FROM php:8.4-cli-alpine AS wayfinder
+RUN apk add --no-cache oniguruma-dev libzip-dev && \
+    docker-php-ext-install mbstring zip
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+WORKDIR /app
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --no-scripts --prefer-dist
+COPY . .
+RUN mkdir -p bootstrap/cache storage/logs && \
+    APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
+    DB_CONNECTION=sqlite DB_DATABASE=/tmp/build.sqlite \
+    php artisan wayfinder:generate --with-form
+
+# Stage 2: Build frontend assets
 FROM node:22-alpine AS assets
 ENV DOCKER_BUILD=true
 WORKDIR /build
 COPY package*.json ./
 RUN npm install
 COPY . .
+COPY --from=wayfinder /app/resources/js/actions ./resources/js/actions
+COPY --from=wayfinder /app/resources/js/routes ./resources/js/routes
 RUN npm run build
 
-# Stage 2: PHP 8.4 production image
+# Stage 3: PHP 8.4 production image
 FROM php:8.4-fpm-alpine
 
 # System dependencies
