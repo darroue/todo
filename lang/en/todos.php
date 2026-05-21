@@ -20,5 +20,9 @@ return [
         'upload' => 'Upload attachment',
         'uploading' => 'Uploading…',
         'queued' => 'Queued',
+        'comments_heading' => 'Comments',
+        'comment_placeholder' => 'Add a comment…',
+        'add_comment' => 'Post',
+        'no_comments' => 'No comments yet.',
     ],
 ];

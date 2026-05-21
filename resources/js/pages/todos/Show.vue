@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link, router, setLayoutProps, useForm, usePage } from '@inertiajs/vue3';
 import { useEcho } from '@laravel/echo-vue';
-import { ArrowLeft, Check, GripVertical, Paperclip, Plus, Trash2, X } from 'lucide-vue-next';
+import { ArrowLeft, Check, GripVertical, MessageSquare, Paperclip, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from '@/composables/useTranslation';
 import { VueDraggable as VueDraggablePlus } from 'vue-draggable-plus';
@@ -12,8 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { index, show } from '@/routes/todos';
 import { store as storeAttachment, destroy as destroyAttachment } from '@/routes/todos/tasks/attachments';
+import { store as storeComment, destroy as destroyComment } from '@/routes/todos/tasks/comments';
 import { destroy as destroyTask, reorder as reorderTasks, store as storeTask, update as updateTask } from '@/routes/todos/tasks';
-import type { Task, TaskAttachment, Team, TodoDetail } from '@/types';
+import type { Task, TaskAttachment, TaskComment, Team, TodoDetail } from '@/types';
 
 type UploadQueueItem = {
     id: string;
@@ -66,6 +67,34 @@ const uploadQueue = ref<UploadQueueItem[]>([]);
 const taskList = ref<Task[]>([]);
 watch(() => props.tasks, (val) => { taskList.value = [...val]; }, { immediate: true });
 
+const expandedCommentsTaskId = ref<number | null>(null);
+
+const commentForms = ref<Record<number, ReturnType<typeof useForm<{ body: string }>>>>({});
+
+function getCommentForm(taskId: number) {
+    if (!commentForms.value[taskId]) {
+        commentForms.value[taskId] = useForm({ body: '' });
+    }
+    return commentForms.value[taskId];
+}
+
+function toggleComments(task: Task) {
+    expandedCommentsTaskId.value = expandedCommentsTaskId.value === task.id ? null : task.id;
+}
+
+function submitComment(task: Task) {
+    const form = getCommentForm(task.id);
+    if (!form.body.trim()) {
+        return;
+    }
+    form.post(storeComment({ current_team: currentTeamSlug(), todo: props.todo.id, task: task.id }).url, {
+        preserveScroll: true,
+        onSuccess: () => {
+            form.reset();
+        },
+    });
+}
+
 function startEdit(task: Task) {
     if (task.isCompleted) {
         return;
@@ -110,6 +139,10 @@ function taskRouteArgs(task: Task) {
 
 function attachmentRouteArgs(task: Task, attachment: TaskAttachment) {
     return { current_team: currentTeamSlug(), todo: props.todo.id, task: task.id, attachment: attachment.id };
+}
+
+function commentRouteArgs(task: Task, comment: TaskComment) {
+    return { current_team: currentTeamSlug(), todo: props.todo.id, task: task.id, comment: comment.id };
 }
 
 function uploadAttachment(task: Task, event: Event) {
@@ -189,12 +222,34 @@ function queueItemsForTask(task: Task): UploadQueueItem[] {
     return uploadQueue.value.filter((q) => q.task.id === task.id);
 }
 
+const currentUserId = computed(() => (page.props.auth as { user: { id: number } } | null)?.user?.id);
+
 useEcho<{ todoId: number }>(
     `team.${teamId.value}`,
     'Todos\\TaskChanged',
     (e) => {
         if (e.todoId === props.todo.id) {
             router.reload({ only: ['tasks'] });
+        }
+    },
+    [teamId],
+);
+
+useEcho<{ todoId: number; taskId: number; action: string; comment: TaskComment }>(
+    `team.${teamId.value}`,
+    'Todos\\TaskCommentChanged',
+    (e) => {
+        if (e.todoId !== props.todo.id) {
+            return;
+        }
+        const task = taskList.value.find((t) => t.id === e.taskId);
+        if (!task) {
+            return;
+        }
+        if (e.action === 'created') {
+            task.comments.push(e.comment);
+        } else if (e.action === 'deleted') {
+            task.comments = task.comments.filter((c) => c.id !== e.comment.id);
         }
     },
     [teamId],
@@ -336,6 +391,16 @@ useEcho<{ todoId: number }>(
                 </div>
 
                 <div v-if="editingTaskId !== task.id" class="flex shrink-0 items-start gap-1">
+                    <button
+                        type="button"
+                        class="inline-flex h-8 items-center justify-center gap-1 rounded-md px-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        :class="expandedCommentsTaskId === task.id ? 'text-foreground' : ''"
+                        :data-test="`task-comments-toggle-${task.id}`"
+                        @click="toggleComments(task)"
+                    >
+                        <MessageSquare class="h-4 w-4" />
+                        <span v-if="task.comments.length > 0" class="text-xs">{{ task.comments.length }}</span>
+                    </button>
                     <label
                         :for="`attachment-${task.id}`"
                         class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
@@ -430,6 +495,69 @@ useEcho<{ todoId: number }>(
                     >
                         <X class="h-2.5 w-2.5" />
                     </button>
+                </div>
+            </div>
+
+            <!-- Comments section -->
+            <div v-if="expandedCommentsTaskId === task.id" class="mt-3 border-t pt-3 pl-8">
+                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {{ t('todos.show.comments_heading') }}
+                </p>
+
+                <div v-if="task.comments.length === 0" class="mb-2 text-sm text-muted-foreground/60 italic">
+                    {{ t('todos.show.no_comments') }}
+                </div>
+
+                <div v-else class="mb-3 space-y-2">
+                    <div
+                        v-for="comment in task.comments"
+                        :key="comment.id"
+                        class="group flex items-start gap-2"
+                        :data-test="`task-comment-${comment.id}`"
+                    >
+                        <div class="flex-1 rounded-md bg-muted px-3 py-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-xs font-medium">{{ comment.user.name }}</span>
+                                <span class="text-[10px] text-muted-foreground">
+                                    {{ new Date(comment.createdAt).toLocaleString() }}
+                                </span>
+                            </div>
+                            <p class="mt-0.5 text-sm">{{ comment.body }}</p>
+                        </div>
+                        <Form
+                            v-if="comment.user.id === currentUserId"
+                            v-bind="destroyComment.form(commentRouteArgs(task, comment))"
+                            class="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                            <button
+                                type="submit"
+                                class="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-muted-foreground hover:text-destructive"
+                                :data-test="`task-comment-delete-${comment.id}`"
+                            >
+                                <X class="h-3 w-3" />
+                            </button>
+                        </Form>
+                    </div>
+                </div>
+
+                <!-- New comment form -->
+                <div class="flex gap-2">
+                    <textarea
+                        v-model="getCommentForm(task.id).body"
+                        :placeholder="t('todos.show.comment_placeholder')"
+                        rows="1"
+                        class="flex-1 rounded-md border border-input bg-transparent px-3 py-1.5 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        :data-test="`task-comment-input-${task.id}`"
+                        @keydown.enter.prevent="submitComment(task)"
+                    />
+                    <Button
+                        size="sm"
+                        :disabled="getCommentForm(task.id).processing || !getCommentForm(task.id).body.trim()"
+                        :data-test="`task-comment-submit-${task.id}`"
+                        @click="submitComment(task)"
+                    >
+                        {{ t('todos.show.add_comment') }}
+                    </Button>
                 </div>
             </div>
             </div>

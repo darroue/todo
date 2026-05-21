@@ -60,7 +60,7 @@ class TodoController extends Controller
                 'title' => $todo->title,
                 'createdAt' => $todo->created_at->toISOString(),
             ],
-            'tasks' => $todo->tasks()->with('attachments')->orderBy('order')->get()->map(fn ($task) => [
+            'tasks' => $todo->tasks()->with(['attachments', 'comments.user'])->orderBy('order')->get()->map(fn ($task) => [
                 'id' => $task->id,
                 'title' => $task->title,
                 'description' => $task->description,
@@ -74,6 +74,15 @@ class TodoController extends Controller
                     'url' => $a->url(),
                     'isImage' => $a->isImage(),
                     'extension' => $a->extension(),
+                ]),
+                'comments' => $task->comments->map(fn ($c) => [
+                    'id' => $c->id,
+                    'body' => $c->body,
+                    'createdAt' => $c->created_at->toISOString(),
+                    'user' => [
+                        'id' => $c->user->id,
+                        'name' => $c->user->name,
+                    ],
                 ]),
             ]),
         ]);

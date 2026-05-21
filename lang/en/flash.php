@@ -8,6 +8,7 @@ return [
     'todo_deleted' => 'Todo deleted.',
     'todo_restored' => 'Todo restored.',
     'attachment_deleted' => 'Attachment deleted.',
+    'comment_deleted' => 'Comment deleted.',
     'profile_updated' => 'Profile updated.',
     'password_updated' => 'Password updated.',
     'team_created' => 'Team created.',

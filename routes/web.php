@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\Todos\TaskAttachmentController;
+use App\Http\Controllers\Todos\TaskCommentController;
 use App\Http\Controllers\Todos\TaskController;
 use App\Http\Controllers\Todos\TodoController;
 use App\Http\Middleware\EnsureTeamMembership;
@@ -28,6 +29,8 @@ Route::prefix('{current_team}')
         Route::post('todos/{todo}/tasks/{task}/restore', [TaskController::class, 'restore'])->name('todos.tasks.restore');
         Route::post('todos/{todo}/tasks/{task}/attachments', [TaskAttachmentController::class, 'store'])->name('todos.tasks.attachments.store');
         Route::delete('todos/{todo}/tasks/{task}/attachments/{attachment}', [TaskAttachmentController::class, 'destroy'])->name('todos.tasks.attachments.destroy');
+        Route::post('todos/{todo}/tasks/{task}/comments', [TaskCommentController::class, 'store'])->name('todos.tasks.comments.store');
+        Route::delete('todos/{todo}/tasks/{task}/comments/{comment}', [TaskCommentController::class, 'destroy'])->name('todos.tasks.comments.destroy');
     });
 
 Route::middleware(['auth'])->group(function () {

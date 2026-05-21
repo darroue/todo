@@ -8,6 +8,7 @@ return [
     'todo_deleted' => 'Úkol smazán.',
     'todo_restored' => 'Úkol obnoven.',
     'attachment_deleted' => 'Příloha smazána.',
+    'comment_deleted' => 'Komentář smazán.',
     'profile_updated' => 'Profil aktualizován.',
     'password_updated' => 'Heslo aktualizováno.',
     'team_created' => 'Tým vytvořen.',

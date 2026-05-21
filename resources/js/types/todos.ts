@@ -16,6 +16,16 @@ export type TaskAttachment = {
     extension: string;
 };
 
+export type TaskComment = {
+    id: number;
+    body: string;
+    createdAt: string;
+    user: {
+        id: number;
+        name: string;
+    };
+};
+
 export type Task = {
     id: number;
     title: string;
@@ -23,6 +33,7 @@ export type Task = {
     isCompleted: boolean;
     completedAt: string | null;
     attachments: TaskAttachment[];
+    comments: TaskComment[];
 };
 
 export type TodoDetail = {

@@ -20,5 +20,9 @@ return [
         'upload' => 'Nahrát přílohu',
         'uploading' => 'Nahrávám…',
         'queued' => 'Ve frontě',
+        'comments_heading' => 'Komentáře',
+        'comment_placeholder' => 'Přidat komentář…',
+        'add_comment' => 'Odeslat',
+        'no_comments' => 'Zatím žádné komentáře.',
     ],
 ];
