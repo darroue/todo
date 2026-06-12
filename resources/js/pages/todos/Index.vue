@@ -53,22 +53,22 @@ useEcho<{ action: string }>(
 
         <Form
             v-bind="store.form(currentTeamSlug())"
-            class="flex gap-2"
+            class="flex flex-col gap-2 sm:flex-row"
             v-slot="{ errors, processing }"
         >
-            <div class="flex flex-col gap-1">
+            <div class="flex flex-col gap-1 sm:w-72">
                 <Label for="todo-title" class="sr-only">{{ t('todos.show.task_title') }}</Label>
                 <Input
                     id="todo-title"
                     name="title"
                     :placeholder="t('todos.title_placeholder')"
                     required
-                    class="w-72"
+                    class="w-full"
                     data-test="todo-title-input"
                 />
                 <InputError :message="errors.title" />
             </div>
-            <Button type="submit" :disabled="processing" data-test="todo-create-button">
+            <Button type="submit" :disabled="processing" class="w-full sm:w-auto" data-test="todo-create-button">
                 <Plus /> {{ t('todos.add') }}
             </Button>
         </Form>
