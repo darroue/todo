@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-vue-next';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from '@/composables/useTranslation';
 import AppLogo from '@/components/AppLogo.vue';
 import AppLogoIcon from '@/components/AppLogoIcon.vue';
@@ -60,6 +60,8 @@ const dashboardUrl = computed(() =>
 const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
+const mobileMenuOpen = ref(false);
+
 const mainNavItems = computed<NavItem[]>(() => [
     {
         title: t('nav.dashboard'),
@@ -88,7 +90,7 @@ const rightNavItems = computed<NavItem[]>(() => [
             <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
-                    <Sheet>
+                    <Sheet v-model:open="mobileMenuOpen">
                         <SheetTrigger :as-child="true">
                             <Button
                                 variant="ghost"
@@ -115,6 +117,7 @@ const rightNavItems = computed<NavItem[]>(() => [
                                         v-for="item in mainNavItems"
                                         :key="item.title"
                                         :href="item.href"
+                                        @click="mobileMenuOpen = false"
                                         class="flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-accent"
                                         :class="
                                             whenCurrentUrl(
@@ -138,6 +141,7 @@ const rightNavItems = computed<NavItem[]>(() => [
                                         :href="toUrl(item.href)"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        @click="mobileMenuOpen = false"
                                         class="flex items-center space-x-2 text-sm font-medium"
                                     >
                                         <component
