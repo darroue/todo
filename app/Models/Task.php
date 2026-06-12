@@ -40,6 +40,11 @@ class Task extends Model
         return $this->hasMany(TaskComment::class);
     }
 
+    public function isCompleted(): bool
+    {
+        return $this->completed_at !== null;
+    }
+
     protected function casts(): array
     {
         return [

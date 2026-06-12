@@ -82,6 +82,35 @@ test('user cannot delete another users comment', function () {
     $this->assertDatabaseHas('task_comments', ['id' => $comment->id]);
 });
 
+test('comment cannot be added to a completed task', function () {
+    $user = User::factory()->create();
+    $team = $user->currentTeam;
+    $todo = Todo::factory()->create(['team_id' => $team->id, 'user_id' => $user->id]);
+    $task = Task::factory()->completed()->create(['todo_id' => $todo->id]);
+
+    $this->actingAs($user)
+        ->post(route('todos.tasks.comments.store', [$team->slug, $todo->id, $task->id]), [
+            'body' => 'This is a comment.',
+        ])
+        ->assertForbidden();
+
+    $this->assertDatabaseMissing('task_comments', ['task_id' => $task->id]);
+});
+
+test('comment cannot be deleted from a completed task', function () {
+    $user = User::factory()->create();
+    $team = $user->currentTeam;
+    $todo = Todo::factory()->create(['team_id' => $team->id, 'user_id' => $user->id]);
+    $task = Task::factory()->completed()->create(['todo_id' => $todo->id]);
+    $comment = TaskComment::factory()->create(['task_id' => $task->id, 'user_id' => $user->id]);
+
+    $this->actingAs($user)
+        ->delete(route('todos.tasks.comments.destroy', [$team->slug, $todo->id, $task->id, $comment->id]))
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('task_comments', ['id' => $comment->id]);
+});
+
 test('comments appear in todo show response', function () {
     $user = User::factory()->create();
     $team = $user->currentTeam;

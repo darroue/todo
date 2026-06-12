@@ -18,6 +18,7 @@ class TaskCommentController extends Controller
     {
         abort_unless($todo->team_id === $currentTeam->id, 404);
         abort_unless($task->todo_id === $todo->id, 404);
+        abort_if($task->isCompleted(), 403);
 
         $validated = $request->validate([
             'body' => ['required', 'string', 'max:1000'],
@@ -41,6 +42,7 @@ class TaskCommentController extends Controller
         abort_unless($task->todo_id === $todo->id, 404);
         abort_unless($comment->task_id === $task->id, 404);
         abort_unless($comment->user_id === auth()->id(), 403);
+        abort_if($task->isCompleted(), 403);
 
         broadcast(new TaskCommentChanged($currentTeam, $todo, $task, $comment, 'deleted'))->toOthers();
 

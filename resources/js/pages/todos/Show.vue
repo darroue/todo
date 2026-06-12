@@ -402,6 +402,7 @@ useEcho<{ todoId: number; taskId: number; action: string; comment: TaskComment }
                         <span v-if="task.comments.length > 0" class="text-xs">{{ task.comments.length }}</span>
                     </button>
                     <label
+                        v-if="!task.isCompleted"
                         :for="`attachment-${task.id}`"
                         class="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                         :title="t('todos.show.upload')"
@@ -525,7 +526,7 @@ useEcho<{ todoId: number; taskId: number; action: string; comment: TaskComment }
                             <p class="mt-0.5 text-sm">{{ comment.body }}</p>
                         </div>
                         <Form
-                            v-if="comment.user.id === currentUserId"
+                            v-if="comment.user.id === currentUserId && !task.isCompleted"
                             v-bind="destroyComment.form(commentRouteArgs(task, comment))"
                             class="opacity-0 group-hover:opacity-100 transition-opacity"
                         >
@@ -541,7 +542,7 @@ useEcho<{ todoId: number; taskId: number; action: string; comment: TaskComment }
                 </div>
 
                 <!-- New comment form -->
-                <div class="flex gap-2">
+                <div v-if="!task.isCompleted" class="flex gap-2">
                     <textarea
                         v-model="getCommentForm(task.id).body"
                         :placeholder="t('todos.show.comment_placeholder')"

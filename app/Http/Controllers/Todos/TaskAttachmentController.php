@@ -19,6 +19,7 @@ class TaskAttachmentController extends Controller
     {
         abort_unless($todo->team_id === $currentTeam->id, 404);
         abort_unless($task->todo_id === $todo->id, 404);
+        abort_if($task->isCompleted(), 403);
 
         $request->validate([
             'file' => ['required', 'file', 'max:10240'],
@@ -44,6 +45,7 @@ class TaskAttachmentController extends Controller
         abort_unless($todo->team_id === $currentTeam->id, 404);
         abort_unless($task->todo_id === $todo->id, 404);
         abort_unless($attachment->task_id === $task->id, 404);
+        abort_if($task->isCompleted(), 403);
 
         Storage::delete($attachment->path);
         $attachment->delete();
