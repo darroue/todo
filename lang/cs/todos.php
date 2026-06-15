@@ -24,5 +24,11 @@ return [
         'comment_placeholder' => 'Přidat komentář…',
         'add_comment' => 'Odeslat',
         'no_comments' => 'Zatím žádné komentáře.',
+        'lightbox' => [
+            'close' => 'Zavřít',
+            'previous' => 'Předchozí obrázek',
+            'next' => 'Další obrázek',
+            'download' => 'Stáhnout',
+        ],
     ],
 ];

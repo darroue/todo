@@ -6,6 +6,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from '@/composables/useTranslation';
 import { VueDraggable as VueDraggablePlus } from 'vue-draggable-plus';
 import Heading from '@/components/Heading.vue';
+import ImageLightbox from '@/components/ImageLightbox.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -220,6 +221,17 @@ watch(uploadQueue, processQueue, { deep: true });
 
 function queueItemsForTask(task: Task): UploadQueueItem[] {
     return uploadQueue.value.filter((q) => q.task.id === task.id);
+}
+
+const lightboxOpen = ref(false);
+const lightboxIndex = ref(0);
+const lightboxImages = ref<{ url: string; filename: string }[]>([]);
+
+function openLightbox(task: Task, attachment: TaskAttachment) {
+    const images = task.attachments.filter((a) => a.isImage);
+    lightboxImages.value = images.map((a) => ({ url: a.url, filename: a.filename }));
+    lightboxIndex.value = images.findIndex((a) => a.id === attachment.id);
+    lightboxOpen.value = true;
 }
 
 const currentUserId = computed(() => (page.props.auth as { user: { id: number } } | null)?.user?.id);
@@ -439,24 +451,32 @@ useEcho<{ todoId: number; taskId: number; action: string; comment: TaskComment }
                     class="group relative"
                     :data-test="`task-attachment-${attachment.id}`"
                 >
-                    <a :href="attachment.url" target="_blank" rel="noopener noreferrer">
+                    <button
+                        v-if="attachment.isImage"
+                        type="button"
+                        class="block cursor-pointer"
+                        :data-test="`task-attachment-open-${attachment.id}`"
+                        @click="openLightbox(task, attachment)"
+                    >
                         <img
-                            v-if="attachment.isImage"
                             :src="attachment.url"
                             :alt="attachment.filename"
                             class="h-20 w-20 rounded-md border object-cover transition-opacity group-hover:opacity-75"
                         />
-                        <div
-                            v-else
-                            class="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-md border bg-muted text-center transition-colors group-hover:bg-muted/70"
-                        >
-                            <span class="text-xs font-bold uppercase text-muted-foreground">
-                                {{ attachment.extension }}
-                            </span>
-                            <span class="line-clamp-2 break-all px-1 text-[10px] text-muted-foreground">
-                                {{ attachment.filename }}
-                            </span>
-                        </div>
+                    </button>
+                    <a
+                        v-else
+                        :href="attachment.url"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="flex h-20 w-20 flex-col items-center justify-center gap-1 rounded-md border bg-muted text-center transition-colors group-hover:bg-muted/70"
+                    >
+                        <span class="text-xs font-bold uppercase text-muted-foreground">
+                            {{ attachment.extension }}
+                        </span>
+                        <span class="line-clamp-2 break-all px-1 text-[10px] text-muted-foreground">
+                            {{ attachment.filename }}
+                        </span>
                     </a>
                     <Form
                         v-if="!task.isCompleted"
@@ -570,5 +590,11 @@ useEcho<{ todoId: number; taskId: number; action: string; comment: TaskComment }
         >
             {{ t('todos.show.empty') }}
         </p>
+
+        <ImageLightbox
+            v-model:open="lightboxOpen"
+            v-model:index="lightboxIndex"
+            :images="lightboxImages"
+        />
     </div>
 </template>

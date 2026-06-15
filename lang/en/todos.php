@@ -24,5 +24,11 @@ return [
         'comment_placeholder' => 'Add a comment…',
         'add_comment' => 'Post',
         'no_comments' => 'No comments yet.',
+        'lightbox' => [
+            'close' => 'Close',
+            'previous' => 'Previous image',
+            'next' => 'Next image',
+            'download' => 'Download',
+        ],
     ],
 ];
