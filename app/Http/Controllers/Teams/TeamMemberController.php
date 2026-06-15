@@ -27,7 +27,7 @@ class TeamMemberController extends Controller
             ->firstOrFail()
             ->update(['role' => $newRole]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.member_role_updated')]);
+        Inertia::toast(__('flash.member_role_updated'));
 
         return to_route('teams.edit', ['team' => $team->slug]);
     }
@@ -49,7 +49,7 @@ class TeamMemberController extends Controller
             $user->switchTeam($user->personalTeam());
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.member_removed')]);
+        Inertia::toast(__('flash.member_removed'));
 
         return to_route('teams.edit', ['team' => $team->slug]);
     }

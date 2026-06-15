@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Inertia\ResponseFactory;
 use League\Flysystem\Filesystem;
 use League\Flysystem\GoogleCloudStorage\GoogleCloudStorageAdapter;
 use League\Flysystem\GoogleCloudStorage\PortableVisibilityHandler;
@@ -33,6 +34,27 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureDefaults();
         $this->configureGcs();
+        $this->configureInertiaToast();
+    }
+
+    /**
+     * Register the `Inertia::toast()` macro for flashing toast notifications.
+     */
+    protected function configureInertiaToast(): void
+    {
+        ResponseFactory::macro('toast', function (string $message, string $type = 'success', ?array $action = null): ResponseFactory {
+            /** @var ResponseFactory $this */
+            $payload = [
+                'type' => $type,
+                'message' => $message,
+            ];
+
+            if ($action !== null) {
+                $payload['action'] = $action;
+            }
+
+            return $this->flash('toast', $payload);
+        });
     }
 
     /**

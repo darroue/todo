@@ -4,23 +4,20 @@ namespace App\Http\Controllers\Todos;
 
 use App\Events\Todos\TaskChanged;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Todos\ReorderTasksRequest;
+use App\Http\Requests\Todos\StoreTaskRequest;
+use App\Http\Requests\Todos\UpdateTaskRequest;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\Todo;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TaskController extends Controller
 {
-    public function store(Request $request, Team $currentTeam, Todo $todo): RedirectResponse
+    public function store(StoreTaskRequest $request, Team $currentTeam, Todo $todo): RedirectResponse
     {
-        abort_unless($todo->team_id === $currentTeam->id, 404);
-
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $task = $todo->tasks()->create([
             ...$validated,
@@ -29,29 +26,20 @@ class TaskController extends Controller
 
         broadcast(new TaskChanged($currentTeam, $todo, $task, 'created'))->toOthers();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.task_added')]);
+        Inertia::toast(__('flash.task_added'));
 
         return back();
     }
 
-    public function update(Request $request, Team $currentTeam, Todo $todo, Task $task): RedirectResponse
+    public function update(UpdateTaskRequest $request, Team $currentTeam, Todo $todo, Task $task): RedirectResponse
     {
-        abort_unless($todo->team_id === $currentTeam->id, 404);
-        abort_unless($task->todo_id === $todo->id, 404);
-
-        $validated = $request->validate([
-            'title' => ['sometimes', 'required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'isCompleted' => ['sometimes', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         if (isset($validated['isCompleted'])) {
-            $task->completed_at = $validated['isCompleted'] ? now() : null;
+            $task->markCompleted($validated['isCompleted']);
         }
 
-        if (isset($validated['title'])) {
-            $task->title = $validated['title'];
-        }
+        $task->fill($request->safe()->only(['title']));
 
         if (array_key_exists('description', $validated)) {
             $task->description = $validated['description'];
@@ -66,33 +54,21 @@ class TaskController extends Controller
 
     public function destroy(Team $currentTeam, Todo $todo, Task $task): RedirectResponse
     {
-        abort_unless($todo->team_id === $currentTeam->id, 404);
-        abort_unless($task->todo_id === $todo->id, 404);
-
         broadcast(new TaskChanged($currentTeam, $todo, $task, 'deleted'))->toOthers();
 
         $task->delete();
 
-        Inertia::flash('toast', [
-            'type' => 'success',
-            'message' => __('flash.task_deleted'),
-            'action' => [
-                'label' => __('flash.undo'),
-                'url' => route('todos.tasks.restore', ['current_team' => $currentTeam->slug, 'todo' => $todo->id, 'task' => $task->id]),
-            ],
+        Inertia::toast(__('flash.task_deleted'), action: [
+            'label' => __('flash.undo'),
+            'url' => route('todos.tasks.restore', ['current_team' => $currentTeam->slug, 'todo' => $todo->id, 'task' => $task->id]),
         ]);
 
         return back();
     }
 
-    public function reorder(Request $request, Team $currentTeam, Todo $todo): RedirectResponse
+    public function reorder(ReorderTasksRequest $request, Team $currentTeam, Todo $todo): RedirectResponse
     {
-        abort_unless($todo->team_id === $currentTeam->id, 404);
-
-        $validated = $request->validate([
-            'ids' => ['required', 'array'],
-            'ids.*' => ['required', 'integer'],
-        ]);
+        $validated = $request->validated();
 
         foreach ($validated['ids'] as $order => $id) {
             $todo->tasks()->where('id', $id)->update(['order' => $order]);
@@ -118,7 +94,7 @@ class TaskController extends Controller
 
         broadcast(new TaskChanged($currentTeam, $todo, $task, 'restored'))->toOthers();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.task_restored')]);
+        Inertia::toast(__('flash.task_restored'));
 
         return back();
     }

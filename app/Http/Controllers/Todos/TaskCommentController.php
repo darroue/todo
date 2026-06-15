@@ -4,25 +4,21 @@ namespace App\Http\Controllers\Todos;
 
 use App\Events\Todos\TaskCommentChanged;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Todos\StoreTaskCommentRequest;
 use App\Models\Task;
 use App\Models\TaskComment;
 use App\Models\Team;
 use App\Models\Todo;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TaskCommentController extends Controller
 {
-    public function store(Request $request, Team $currentTeam, Todo $todo, Task $task): RedirectResponse
+    public function store(StoreTaskCommentRequest $request, Team $currentTeam, Todo $todo, Task $task): RedirectResponse
     {
-        abort_unless($todo->team_id === $currentTeam->id, 404);
-        abort_unless($task->todo_id === $todo->id, 404);
         abort_if($task->isCompleted(), 403);
 
-        $validated = $request->validate([
-            'body' => ['required', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         $comment = $task->comments()->create([
             'user_id' => $request->user()->id,
@@ -38,9 +34,6 @@ class TaskCommentController extends Controller
 
     public function destroy(Team $currentTeam, Todo $todo, Task $task, TaskComment $comment): RedirectResponse
     {
-        abort_unless($todo->team_id === $currentTeam->id, 404);
-        abort_unless($task->todo_id === $todo->id, 404);
-        abort_unless($comment->task_id === $task->id, 404);
         abort_unless($comment->user_id === auth()->id(), 403);
         abort_if($task->isCompleted(), 403);
 
@@ -48,7 +41,7 @@ class TaskCommentController extends Controller
 
         $comment->delete();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.comment_deleted')]);
+        Inertia::toast(__('flash.comment_deleted'));
 
         return back();
     }

@@ -45,6 +45,11 @@ class Task extends Model
         return $this->completed_at !== null;
     }
 
+    public function markCompleted(bool $completed): void
+    {
+        $this->completed_at = $completed ? now() : null;
+    }
+
     protected function casts(): array
     {
         return [

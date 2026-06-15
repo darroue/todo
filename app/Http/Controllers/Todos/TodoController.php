@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Todos;
 
 use App\Events\Todos\TodoChanged;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Todos\StoreTodoRequest;
 use App\Http\Resources\Todos\TaskResource;
 use App\Http\Resources\Todos\TodoResource;
 use App\Models\Team;
@@ -27,11 +28,9 @@ class TodoController extends Controller
         ]);
     }
 
-    public function store(Request $request, Team $currentTeam): RedirectResponse
+    public function store(StoreTodoRequest $request, Team $currentTeam): RedirectResponse
     {
-        $validated = $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         $todo = $currentTeam->todos()->create([
             'user_id' => $request->user()->id,
@@ -40,15 +39,13 @@ class TodoController extends Controller
 
         broadcast(new TodoChanged($currentTeam, $todo, 'created'))->toOthers();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.todo_created')]);
+        Inertia::toast(__('flash.todo_created'));
 
         return to_route('todos.show', ['current_team' => $currentTeam->slug, 'todo' => $todo->id]);
     }
 
     public function show(Team $currentTeam, Todo $todo): Response
     {
-        abort_unless($todo->team_id === $currentTeam->id, 404);
-
         return Inertia::render('todos/Show', [
             'todo' => new TodoResource($todo),
             'tasks' => TaskResource::collection(
@@ -59,19 +56,13 @@ class TodoController extends Controller
 
     public function destroy(Team $currentTeam, Todo $todo): RedirectResponse
     {
-        abort_unless($todo->team_id === $currentTeam->id, 404);
-
         broadcast(new TodoChanged($currentTeam, $todo, 'deleted'))->toOthers();
 
         $todo->delete();
 
-        Inertia::flash('toast', [
-            'type' => 'success',
-            'message' => __('flash.todo_deleted'),
-            'action' => [
-                'label' => __('flash.undo'),
-                'url' => route('todos.restore', ['current_team' => $currentTeam->slug, 'todo' => $todo->id]),
-            ],
+        Inertia::toast(__('flash.todo_deleted'), action: [
+            'label' => __('flash.undo'),
+            'url' => route('todos.restore', ['current_team' => $currentTeam->slug, 'todo' => $todo->id]),
         ]);
 
         return to_route('todos.index', ['current_team' => $currentTeam->slug]);
@@ -87,7 +78,7 @@ class TodoController extends Controller
 
         broadcast(new TodoChanged($currentTeam, $todo, 'restored'))->toOthers();
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('flash.todo_restored')]);
+        Inertia::toast(__('flash.todo_restored'));
 
         return to_route('todos.index', ['current_team' => $currentTeam->slug]);
     }
