@@ -271,11 +271,9 @@ useEcho<{ todoId: number; taskId: number; action: string; comment: TaskComment }
 
 const { setViewing, viewersForTask } = useTodoPresence(teamId, currentUserId.value ?? 0);
 
-watch(
-    expandedCommentsTaskId,
-    (taskId) => setViewing(props.todo.id, taskId),
-    { immediate: true },
-);
+// Announce presence on the todo as soon as the page opens; the active task is
+// updated on hover (see the task row mouse handlers below).
+setViewing(props.todo.id, null);
 </script>
 
 <template>
@@ -344,6 +342,8 @@ watch(
                 data-test="task-row"
                 class="rounded-lg border p-4"
                 :class="task.isCompleted ? 'opacity-60' : ''"
+                @mouseenter="setViewing(props.todo.id, task.id)"
+                @mouseleave="setViewing(props.todo.id, null)"
             >
             <div class="flex items-start justify-between">
                 <div class="flex flex-1 min-w-0 items-start gap-3">
