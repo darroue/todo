@@ -5,6 +5,10 @@ image: petr-radous/todo/web
 servers:
   web:
     - dn6
+  worker:
+    hosts:
+      - dn6
+    cmd: php artisan queue:work --tries=3 --max-time=3600
 
 registry:
   server: localhost:5000
