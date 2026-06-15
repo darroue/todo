@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Todos;
 
 use App\Events\Todos\TodoChanged;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Todos\TaskResource;
+use App\Http\Resources\Todos\TodoResource;
 use App\Models\Team;
 use App\Models\Todo;
 use Illuminate\Http\RedirectResponse;
@@ -18,17 +20,10 @@ class TodoController extends Controller
         $todos = $currentTeam->todos()
             ->withCount(['tasks', 'tasks as completed_tasks_count' => fn ($q) => $q->whereNotNull('completed_at')])
             ->latest()
-            ->get()
-            ->map(fn (Todo $todo) => [
-                'id' => $todo->id,
-                'title' => $todo->title,
-                'tasksCount' => $todo->tasks_count,
-                'completedTasksCount' => $todo->completed_tasks_count,
-                'createdAt' => $todo->created_at->toISOString(),
-            ]);
+            ->get();
 
         return Inertia::render('todos/Index', [
-            'todos' => $todos,
+            'todos' => TodoResource::collection($todos),
         ]);
     }
 
@@ -55,36 +50,10 @@ class TodoController extends Controller
         abort_unless($todo->team_id === $currentTeam->id, 404);
 
         return Inertia::render('todos/Show', [
-            'todo' => [
-                'id' => $todo->id,
-                'title' => $todo->title,
-                'createdAt' => $todo->created_at->toISOString(),
-            ],
-            'tasks' => $todo->tasks()->with(['attachments', 'comments.user'])->orderBy('order')->get()->map(fn ($task) => [
-                'id' => $task->id,
-                'title' => $task->title,
-                'description' => $task->description,
-                'isCompleted' => $task->completed_at !== null,
-                'completedAt' => $task->completed_at?->toISOString(),
-                'attachments' => $task->attachments->map(fn ($a) => [
-                    'id' => $a->id,
-                    'filename' => $a->filename,
-                    'mimeType' => $a->mime_type,
-                    'size' => $a->size,
-                    'url' => $a->url(),
-                    'isImage' => $a->isImage(),
-                    'extension' => $a->extension(),
-                ]),
-                'comments' => $task->comments->map(fn ($c) => [
-                    'id' => $c->id,
-                    'body' => $c->body,
-                    'createdAt' => $c->created_at->toISOString(),
-                    'user' => [
-                        'id' => $c->user->id,
-                        'name' => $c->user->name,
-                    ],
-                ]),
-            ]),
+            'todo' => new TodoResource($todo),
+            'tasks' => TaskResource::collection(
+                $todo->tasks()->with(['attachments', 'comments.user'])->orderBy('order')->get()
+            ),
         ]);
     }
 
