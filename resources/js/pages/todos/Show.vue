@@ -85,6 +85,12 @@ function toggleComments(task: Task) {
     expandedCommentsTaskId.value = expandedCommentsTaskId.value === task.id ? null : task.id;
 }
 
+function collapseCommentsIfResolving(task: Task) {
+    if (!task.isCompleted && expandedCommentsTaskId.value === task.id) {
+        expandedCommentsTaskId.value = null;
+    }
+}
+
 function submitComment(task: Task) {
     const form = getCommentForm(task.id);
     if (!form.body.trim()) {
@@ -355,7 +361,7 @@ setViewing(props.todo.id, null);
                         class="mt-0.5"
                     >
                         <input type="hidden" name="isCompleted" :value="task.isCompleted ? '0' : '1'" />
-                        <button type="submit" class="cursor-pointer" :data-test="`task-toggle-${task.id}`">
+                        <button type="submit" class="cursor-pointer" :data-test="`task-toggle-${task.id}`" @click="collapseCommentsIfResolving(task)">
                             <div
                                 class="flex h-5 w-5 items-center justify-center rounded border-2"
                                 :class="task.isCompleted ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground'"
