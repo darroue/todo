@@ -28,6 +28,22 @@ function close() {
     emit('update:open', false);
 }
 
+async function download() {
+    if (!current.value) {
+        return;
+    }
+    const response = await fetch(current.value.url);
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = current.value.filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
+}
+
 function prev() {
     if (!hasMultiple.value) {
         return;
@@ -95,16 +111,15 @@ onBeforeUnmount(() => {
                     <X class="h-5 w-5" />
                 </button>
 
-                <a
-                    :href="current.url"
-                    :download="current.filename"
+                <button
+                    type="button"
                     class="absolute right-16 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
                     :aria-label="t('todos.show.lightbox.download')"
                     data-test="image-lightbox-download"
-                    @click.stop
+                    @click.stop="download"
                 >
                     <Download class="h-5 w-5" />
-                </a>
+                </button>
 
                 <button
                     v-if="hasMultiple"
