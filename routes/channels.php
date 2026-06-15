@@ -12,3 +12,16 @@ Broadcast::channel('team.{teamId}', function ($user, $teamId) {
 
     return $team && $user->belongsToTeam($team);
 });
+
+Broadcast::channel('todos-presence.{teamId}', function ($user, $teamId) {
+    $team = Team::find($teamId);
+
+    if (! $team || ! $user->belongsToTeam($team)) {
+        return null;
+    }
+
+    return [
+        'id' => $user->id,
+        'name' => $user->name,
+    ];
+});

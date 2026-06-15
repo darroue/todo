@@ -4,8 +4,10 @@ import { useEcho } from '@laravel/echo-vue';
 import { CheckSquare, Plus, Trash2 } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { useI18n } from '@/composables/useTranslation';
+import { useTodoPresence } from '@/composables/useTodoPresence';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import PresenceIndicators from '@/components/PresenceIndicators.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,6 +41,9 @@ useEcho<{ action: string }>(
     () => router.reload({ only: ['todos'] }),
     [teamId],
 );
+
+const currentUserId = (page.props.auth as { user: { id: number } } | null)?.user?.id ?? 0;
+const { viewersForTodo } = useTodoPresence(teamId, currentUserId);
 </script>
 
 <template>
@@ -80,18 +85,21 @@ useEcho<{ action: string }>(
                 data-test="todo-row"
                 class="flex items-center justify-between rounded-lg border p-4"
             >
-                <Link
-                    :href="show({ current_team: currentTeamSlug(), todo: todo.id }).url"
-                    class="flex items-center gap-3 hover:underline"
-                >
-                    <CheckSquare class="h-5 w-5 text-muted-foreground" />
-                    <div>
-                        <p class="font-medium">{{ todo.title }}</p>
-                        <p class="text-sm text-muted-foreground">
-                            {{ t('todos.progress', { completed: todo.completedTasksCount, total: todo.tasksCount }) }}
-                        </p>
-                    </div>
-                </Link>
+                <div class="flex min-w-0 items-center gap-3">
+                    <PresenceIndicators :users="viewersForTodo(todo.id)" />
+                    <Link
+                        :href="show({ current_team: currentTeamSlug(), todo: todo.id }).url"
+                        class="flex min-w-0 items-center gap-3 hover:underline"
+                    >
+                        <CheckSquare class="h-5 w-5 shrink-0 text-muted-foreground" />
+                        <div class="min-w-0">
+                            <p class="truncate font-medium">{{ todo.title }}</p>
+                            <p class="text-sm text-muted-foreground">
+                                {{ t('todos.progress', { completed: todo.completedTasksCount, total: todo.tasksCount }) }}
+                            </p>
+                        </div>
+                    </Link>
+                </div>
 
                 <Form v-bind="destroy.form({ current_team: currentTeamSlug(), todo: todo.id })">
                     <Button

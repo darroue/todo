@@ -4,10 +4,12 @@ import { useEcho } from '@laravel/echo-vue';
 import { ArrowLeft, Check, GripVertical, MessageSquare, Paperclip, Plus, Trash2, X } from 'lucide-vue-next';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from '@/composables/useTranslation';
+import { useTodoPresence } from '@/composables/useTodoPresence';
 import { VueDraggable as VueDraggablePlus } from 'vue-draggable-plus';
 import Heading from '@/components/Heading.vue';
 import ImageLightbox from '@/components/ImageLightbox.vue';
 import InputError from '@/components/InputError.vue';
+import PresenceIndicators from '@/components/PresenceIndicators.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -266,6 +268,14 @@ useEcho<{ todoId: number; taskId: number; action: string; comment: TaskComment }
     },
     [teamId],
 );
+
+const { setViewing, viewersForTask } = useTodoPresence(teamId, currentUserId.value ?? 0);
+
+watch(
+    expandedCommentsTaskId,
+    (taskId) => setViewing(props.todo.id, taskId),
+    { immediate: true },
+);
 </script>
 
 <template>
@@ -337,6 +347,7 @@ useEcho<{ todoId: number; taskId: number; action: string; comment: TaskComment }
             >
             <div class="flex items-start justify-between">
                 <div class="flex flex-1 min-w-0 items-start gap-3">
+                    <PresenceIndicators :users="viewersForTask(task.id)" class="mt-0.5 shrink-0" />
                     <GripVertical class="drag-handle mt-0.5 h-4 w-4 shrink-0 cursor-grab text-muted-foreground/40 active:cursor-grabbing" />
 
                     <Form
